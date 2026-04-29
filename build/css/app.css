@@ -1,0 +1,141 @@
+html {
+  font-size: 62.5%;
+  box-sizing: border-box;
+  scroll-padding-top: 0rem;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
+body {
+  font-family: "Montserrat", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+  font-size: 2rem;
+  margin: 0;
+  background-color: #E8F5E9;
+}
+
+h1 {
+  font-size: 3rem;
+}
+
+h2 {
+  font-size: 2rem;
+}
+
+h3 {
+  font-size: 1.5rem;
+}
+
+h4 {
+  font-size: 1rem;
+}
+
+.contenedor {
+  display: flex;
+}
+
+main {
+  flex: 1;
+}
+
+.header {
+  background-color: #2E7D32;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  gap: 10rem;
+  margin: 0;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+.header h1 {
+  margin-left: 1rem;
+}
+.header .info {
+  display: flex;
+  flex-direction: row;
+  gap: 3rem;
+}
+
+.navegacion {
+  background-color: #A5D6A7;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  width: 30rem;
+  height: 100vh;
+}
+.navegacion a {
+  color: #000000;
+  text-decoration: none;
+  padding: 1rem;
+  display: flex;
+  gap: 0.8rem;
+}
+.navegacion a:hover {
+  background-color: #F1F8E9;
+  color: #000000;
+  border-radius: 1rem;
+}
+
+.dashboards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 1.5rem;
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  width: 25rem;
+  height: 20rem;
+  text-align: center;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.temperatura p {
+  font-size: 40px;
+  margin: 10px 0;
+}
+
+#temp-estado {
+  font-weight: bold;
+}
+
+#panel-alertas {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.alertas {
+  margin: 2rem;
+}
+
+.alerta {
+  padding: 1.5rem;
+  border-radius: 0.8rem;
+  color: #FFFFFF;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.peligro {
+  background: #e74c3c;
+}
+
+.precaucion {
+  background: #f39c12;
+}
+
+.normal {
+  background: #2ecc71;
+}

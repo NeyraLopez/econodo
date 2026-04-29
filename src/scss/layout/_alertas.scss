@@ -1,0 +1,34 @@
+@use 'base/variables' as *;
+@use 'base/mixins';
+
+#panel-alertas {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.alertas{
+    margin: 2rem;
+}
+
+.alerta {
+  padding: 1.5rem;
+  border-radius: 0.8rem;
+  color: $blanco;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.peligro {
+  background: $peligro;
+}
+
+.precaucion {
+  background: $precaucion;
+}
+
+.normal {
+  background: $normal;
+}

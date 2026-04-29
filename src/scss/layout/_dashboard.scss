@@ -1,0 +1,28 @@
+@use 'base/variables' as *;
+@use 'base/mixins' as m;
+
+.dashboards{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+
+    margin: 1.5rem;
+}
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    width: 25rem;
+    height:20rem;
+    text-align: center;
+    box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+}
+
+.temperatura p {
+    font-size: 40px;
+    margin: 10px 0;
+}
+
+#temp-estado {
+    font-weight: bold;
+}

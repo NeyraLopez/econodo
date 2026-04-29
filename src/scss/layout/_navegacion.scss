@@ -1,0 +1,26 @@
+@use 'base/variables' as *;
+@use 'base/mixins' as m;
+
+.navegacion{
+    background-color: $verdeClaro;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+
+    width: 30rem;
+    height: 100vh;
+
+    a{
+        color: $negro;
+        text-decoration: none;
+        padding: 1rem;
+        display: flex;
+        gap: 0.8rem;
+
+        &:hover{
+            background-color: $beish;
+            color: $negro;
+            border-radius: 1rem;
+        }
+    }
+}

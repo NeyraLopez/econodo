@@ -1,0 +1,23 @@
+@use 'base/variables' as *;
+@use 'base/mixins' as m;
+
+.header{
+    background-color: $verde;
+    color: $blanco;
+    display: flex;
+    align-items: center;
+    gap: 10rem;
+    margin: 0;
+
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+
+    h1{
+        margin-left: 1rem;
+    }
+
+    .info{
+        display: flex;
+        flex-direction: row;
+        gap: 3rem;
+    }
+}

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Econodo</title>
+    <link rel="stylesheet" href="build/css/app.css">
+</head>
+<body>
+   <header class="header">
+        <h1>Monitoreo Ambiental</h1>
+        
+        <div class="info">
+            <p>Fecha: <span id="fecha"></span></p>
+            <p>Hora: <span id="hora"></span></p>
+            <p>Estado del dispositivo: <span id="estado">Activo</span></p>
+        </div>
+    </header>
+
+    <div class="contenedor">
+        <nav class="navegacion">
+            <a href="index.html"><img src="src/img/panel.png" alt="IconoDasboard">Dashboard</a>
+            <a href="historial.html"><img src="src/img/reloj.png" alt="IconoHistorial">Historial</a>
+            <a href="alertas.html"><img src="src/img/peligro.png" alt="IconoAlertas">Alertas</a>
+            <a href="configuracion.html"><img src="src/img/engranaje.png" alt="IconoDasboard">Configuración</a>
+        </nav>
+
+        <main class="dashboards">
+
+            <div class="card temperatura">
+                <h2>🌡️ Temperatura</h2>
+                <p id="temp-valor">-- °C</p>
+                <span id="temp-estado">Cargando...</span>
+            </div>
+
+            <div class="card temperatura">
+                <h2>☣️ Calidad del Aire</h2>
+                <p id="temp-valor">-- °C</p>
+                <span id="temp-estado">Cargando...</span>
+            </div>
+
+            <div class="card temperatura">
+                <h2>🧭 Presion admosferica</h2>
+                <p id="temp-valor">-- °C</p>
+                <span id="temp-estado">Cargando...</span>
+            </div>
+
+            <div class="card temperatura">
+                <h2>💧 Humedad</h2>
+                <p id="temp-valor">-- °C</p>
+                <span id="temp-estado">Cargando...</span>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
