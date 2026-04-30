@@ -67,7 +67,7 @@ main {
   align-items: center;
   flex-direction: column;
   width: 30rem;
-  height: 100vh;
+  min-height: 100vh;
 }
 .navegacion a {
   color: #000000;
@@ -138,4 +138,95 @@ main {
 
 .normal {
   background: #2ecc71;
+}
+
+.texto {
+  color: #000000;
+}
+
+.contenedor-ajustes {
+  max-width: 90rem;
+  margin: auto;
+  padding: 2rem;
+  color: #FFFFFF;
+}
+
+.card-ajustes {
+  background: #1e293b;
+  padding: 2rem;
+  border-radius: 1.2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 0.4rem 1rem rgba(0, 0, 0, 0.3);
+}
+
+.card-ajustes h2 {
+  margin-bottom: 1.5rem;
+}
+
+.grupo {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.5rem;
+}
+
+.grupo.horizontal {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+input[type=number],
+input[type=text] {
+  padding: 0.8rem;
+  border-radius: 0.6rem;
+  border: none;
+  margin-top: 0.5rem;
+  background: #334155;
+  color: #FFFFFF;
+}
+
+input[type=checkbox] {
+  transform: scale(1.2);
+}
+
+.checkboxes {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.estado {
+  margin-top: 1rem;
+  font-weight: bold;
+}
+
+.conectado {
+  color: #2ecc71;
+}
+
+.btn-principal {
+  width: 100%;
+  padding: 1.2rem;
+  border: none;
+  border-radius: 10px;
+  background: #7c3aed;
+  color: #FFFFFF;
+  font-size: 1.6rem;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-principal:hover {
+  background: #6d28d9;
+}
+
+.btn-secundario {
+  margin-top: 1rem;
+  padding: 0.8rem;
+  border: none;
+  border-radius: 0.8rem;
+  background: #3b82f6;
+  color: #FFFFFF;
+  cursor: pointer;
 }

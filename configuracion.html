@@ -25,8 +25,98 @@
             <a href="configuracion.html"><img src="src/img/engranaje.png" alt="IconoDasboard">Configuración</a>
         </nav>
 
-        <main class="dashboards">
-            <h3>Configuracion</h3>
+        <main class="contenedor-ajustes">
+             <h1 class="texto">⚙️ Configuración</h1>
+
+            <!-- 🌡️ UMBRALES -->
+            <div class="card-ajustes">
+                <h2>🌡️ Umbrales</h2>
+
+                <div class="grupo">
+                <label>Temperatura máxima (°C)</label>
+                <input type="number" placeholder="35">
+                </div>
+
+                <div class="grupo">
+                <label>Humedad mínima (%)</label>
+                <input type="number" placeholder="20">
+                </div>
+
+                <div class="grupo">
+                <label>Presión mínima</label>
+                <input type="number" placeholder="950">
+                </div>
+
+                <div class="grupo">
+                <label>Calidad de aire máxima (AQI)</label>
+                <input type="number" placeholder="150">
+                </div>
+            </div>
+
+            <!-- 🔔 ALERTAS -->
+            <div class="card-ajustes">
+                <h2>🔔 Alertas</h2>
+
+                <div class="grupo horizontal">
+                <label>Activar sonido</label>
+                <input type="checkbox">
+                </div>
+
+                <div class="grupo horizontal">
+                <label>Alertar solo si dura (segundos)</label>
+                <input type="number" placeholder="10">
+                </div>
+
+                <div class="grupo">
+                <label>Tipos de alerta</label>
+                <div class="checkboxes">
+                    <label><input type="checkbox" checked> Temperatura</label>
+                    <label><input type="checkbox" checked> Humedad</label>
+                    <label><input type="checkbox" checked> Presión</label>
+                    <label><input type="checkbox" checked> Aire</label>
+                </div>
+                </div>
+            </div>
+
+            <!-- 📊 HISTORIAL -->
+            <div class="card-ajustes">
+                <h2>📊 Historial</h2>
+
+                <div class="grupo">
+                <label>Guardar datos cada (minutos)</label>
+                <input type="number" placeholder="5">
+                </div>
+
+                <div class="grupo">
+                <label>Eliminar datos después de (días)</label>
+                <input type="number" placeholder="30">
+                </div>
+
+                <button class="btn-secundario">📥 Descargar historial</button>
+            </div>
+
+            <!-- 📡 DISPOSITIVO -->
+            <div class="card-ajustes">
+                <h2>📡 Dispositivo</h2>
+
+                <div class="grupo">
+                <label>IP del dispositivo</label>
+                <input type="text" placeholder="192.168.1.10">
+                </div>
+
+                <div class="grupo">
+                <label>Frecuencia de actualización (segundos)</label>
+                <input type="number" placeholder="3">
+                </div>
+
+                <div class="estado">
+                Estado: <span class="conectado">🟢 Conectado</span>
+                </div>
+            </div>
+
+            <!-- 💾 BOTÓN -->
+            <button class="btn-principal">💾 Guardar configuración</button>
+
         </main>
     </div>
 
