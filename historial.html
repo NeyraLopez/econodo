@@ -26,11 +26,104 @@
         </nav>
 
         <main class="historial">
-            <h3>Historial</h3>
+            <div class="encabezado-historial">
+                <h1>📊 Historial Ambiental</h1>
+            </div>
+
+            <!-- FILTROS -->
+            <div class="filtros">
+
+                <div class="grupo">
+                <label>Año</label>
+                <select id="filtro-anio">
+                    <option value="Todos">Todos</option>
+                    <option value="2026">2026</option>
+                </select>
+                </div>
+
+                <div class="grupo">
+                <label>Mes</label>
+                <select id="filtro-mes">
+                    <option value="Todos">Todos</option>
+                    <option value="01">Enero</option>
+                    <option value="02">Febrero</option>
+                    <option value="03">Marzo</option>
+                    <option value="04">Abril</option>
+                    <option value="05">Mayo</option>
+                    <option value="06">Junio</option>
+                    <option value="07">Julio</option>
+                    <option value="08">Agosto</option>
+                    <option value="09">Septiembre</option>
+                    <option value="10">Octubre</option>
+                    <option value="11">Noviembre</option>
+                    <option value="12">Diciembre</option>
+                </select>
+                </div>
+
+                <div class="grupo">
+                <label>Día</label>
+                <select id="filtro-dia">
+                    <option value="Todos">Todos</option>
+                </select>
+                </div>
+
+                <button class="btn-filtrar">
+                Aplicar filtros
+                </button>
+
+            </div>
+
+            <!-- GRAFICAS -->
+            <div class="contenedor-graficas">
+
+                <div class="card-grafica">
+                <div class="titulo-card">
+                    <h2>🌡️ Temperatura</h2>
+                </div>
+
+                <div class="grafica-wrapper">
+                    <canvas id="graficaTemperatura"></canvas>
+                </div>
+                </div>
+
+                <div class="card-grafica">
+                <div class="titulo-card">
+                    <h2>💧 Humedad</h2>
+                </div>
+
+                <div class="grafica-wrapper">
+                    <canvas id="graficaHumedad"></canvas>
+                </div>
+                </div>
+
+                <div class="card-grafica">
+                <div class="titulo-card">
+                    <h2>☣️ Calidad del Aire</h2>
+                </div>
+
+                <div class="grafica-wrapper">
+                    <canvas id="graficaAire"></canvas>
+                </div>
+                </div>
+
+                <div class="card-grafica">
+                <div class="titulo-card">
+                    <h2>🌪️ Presión Atmosférica</h2>
+                </div>
+
+                <div class="grafica-wrapper">
+                    <canvas id="graficaPresion"></canvas>
+                </div>
+                </div>
+
+            </div>
+
             
         </main>
     </div>
 
-    <script src="app.js"></script>
+    <!--<script src="js/app.js"></script>-->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/historial.js"></script>
 </body>
 </html>
