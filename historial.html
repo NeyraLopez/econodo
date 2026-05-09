@@ -34,37 +34,37 @@
             <div class="filtros">
 
                 <div class="grupo">
-                <label>Año</label>
-                <select id="filtro-anio">
-                    <option value="Todos">Todos</option>
-                    <option value="2026">2026</option>
-                </select>
+                    <label>Año</label>
+                    <select id="filtro-anio">
+                        <option value="Todos">Todos</option>
+                        <option value="2026">2026</option>
+                    </select>
                 </div>
 
                 <div class="grupo">
-                <label>Mes</label>
-                <select id="filtro-mes">
-                    <option value="Todos">Todos</option>
-                    <option value="01">Enero</option>
-                    <option value="02">Febrero</option>
-                    <option value="03">Marzo</option>
-                    <option value="04">Abril</option>
-                    <option value="05">Mayo</option>
-                    <option value="06">Junio</option>
-                    <option value="07">Julio</option>
-                    <option value="08">Agosto</option>
-                    <option value="09">Septiembre</option>
-                    <option value="10">Octubre</option>
-                    <option value="11">Noviembre</option>
-                    <option value="12">Diciembre</option>
-                </select>
+                    <label>Mes</label>
+                    <select id="filtro-mes">
+                        <option value="Todos">Todos</option>
+                        <option value="01">Enero</option>
+                        <option value="02">Febrero</option>
+                        <option value="03">Marzo</option>
+                        <option value="04">Abril</option>
+                        <option value="05">Mayo</option>
+                        <option value="06">Junio</option>
+                        <option value="07">Julio</option>
+                        <option value="08">Agosto</option>
+                        <option value="09">Septiembre</option>
+                        <option value="10">Octubre</option>
+                        <option value="11">Noviembre</option>
+                        <option value="12">Diciembre</option>
+                    </select>
                 </div>
 
                 <div class="grupo">
-                <label>Día</label>
-                <select id="filtro-dia">
-                    <option value="Todos">Todos</option>
-                </select>
+                    <label>Día</label>
+                    <select id="filtro-dia">
+                        <option value="Todos">Todos</option>
+                    </select>
                 </div>
 
                 <button class="btn-filtrar">
@@ -73,47 +73,68 @@
 
             </div>
 
+            <!-- SELECTOR DE GRAFICAS -->
+            <div class="selector-graficas">
+
+                <button class="btn-grafica activo" data-grafica="temperatura">
+                    🌡️ Temperatura
+                </button>
+
+                <button class="btn-grafica" data-grafica="humedad">
+                    💧 Humedad
+                </button>
+
+                <button class="btn-grafica" data-grafica="aire">
+                    ☣️ Aire
+                </button>
+
+                <button class="btn-grafica" data-grafica="presion">
+                    🌪️ Presión
+                </button>
+
+            </div>
+
             <!-- GRAFICAS -->
             <div class="contenedor-graficas">
 
-                <div class="card-grafica">
-                <div class="titulo-card">
-                    <h2>🌡️ Temperatura</h2>
+                <div class="card-grafica" id="temperatura">
+                    <div class="titulo-card">
+                        <h2>🌡️ Temperatura</h2>
+                    </div>
+
+                    <div class="grafica-wrapper">
+                        <canvas id="graficaTemperatura"></canvas>
+                    </div>
                 </div>
 
-                <div class="grafica-wrapper">
-                    <canvas id="graficaTemperatura"></canvas>
-                </div>
+                <div class="card-grafica" id="humedad">
+                    <div class="titulo-card">
+                        <h2>💧 Humedad</h2>
+                    </div>
+
+                    <div class="grafica-wrapper">
+                        <canvas id="graficaHumedad"></canvas>
+                    </div>
                 </div>
 
-                <div class="card-grafica">
-                <div class="titulo-card">
-                    <h2>💧 Humedad</h2>
+                <div class="card-grafica" id="aire">
+                    <div class="titulo-card">
+                        <h2>☣️ Calidad del Aire</h2>
+                    </div>
+
+                    <div class="grafica-wrapper">
+                        <canvas id="graficaAire"></canvas>
+                    </div>
                 </div>
 
-                <div class="grafica-wrapper">
-                    <canvas id="graficaHumedad"></canvas>
-                </div>
-                </div>
+                <div class="card-grafica" id="presion">
+                    <div class="titulo-card">
+                        <h2>🌪️ Presión Atmosférica</h2>
+                    </div>
 
-                <div class="card-grafica">
-                <div class="titulo-card">
-                    <h2>☣️ Calidad del Aire</h2>
-                </div>
-
-                <div class="grafica-wrapper">
-                    <canvas id="graficaAire"></canvas>
-                </div>
-                </div>
-
-                <div class="card-grafica">
-                <div class="titulo-card">
-                    <h2>🌪️ Presión Atmosférica</h2>
-                </div>
-
-                <div class="grafica-wrapper">
-                    <canvas id="graficaPresion"></canvas>
-                </div>
+                    <div class="grafica-wrapper">
+                        <canvas id="graficaPresion"></canvas>
+                    </div>
                 </div>
 
             </div>

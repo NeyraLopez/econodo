@@ -15,6 +15,41 @@
   }
 }
 
+.selector-graficas{
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+
+  button{
+    border: none;
+    padding: 1rem 1.5rem;
+    border-radius: 1rem;
+    cursor: pointer;
+    background-color: $verde;
+    transition: .3s ease;
+    font-weight: bold;
+  }
+}
+
+
+.btn-grafica:hover{
+  transform: translateY(-3px);
+}
+
+.btn-grafica.activo{
+  background-color: $botonHover;
+  color: $blanco;
+}
+
+.card-grafica{
+  display: none;
+}
+
+.card-grafica.activa{
+  display: block;
+}
+
 .filtros {
   display: flex;
   gap: 1rem;
@@ -107,8 +142,7 @@ canvas {
   color: $grisTexto;
 }
 
-@media (max-width: 768px) {
-
+@media (max-width: $telefono){
   .historial {
     padding: 1rem;
   }

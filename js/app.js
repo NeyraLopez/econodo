@@ -42,15 +42,15 @@ function generarAlertas(data) {
   }
 
   // 💧 Humedad
-  if (data.humedad < 20 && !alertasActivas["humedad"]) {
+  if (data.humedad >= 80 && !alertasActivas["humedad"]) {
     nuevas.push({
       tipo: "humedad",
-      mensaje: `Humedad baja: ${data.humedad}%`,
+      mensaje: `Humedad alta: ${data.humedad}%`,
       nivel: "peligro",
       fecha: obtenerFechaHora()
     });
     alertasActivas["humedad"] = true;
-  } else if (data.humedad >= 20) {
+  } else if (data.humedad < 80) {
     alertasActivas["humedad"] = false;
   }
 
@@ -135,94 +135,3 @@ setInterval(() => {
 }, 3000);
 
 
-// 📊 DATOS SIMULADOS
-const historial = [];
-
-for(let i = 1; i <= 30; i++) {
-
-  historial.push({
-    fecha: `2026-04-${i}`,
-    temperatura: Math.floor(Math.random() * 15) + 25,
-    humedad: Math.floor(Math.random() * 50) + 30,
-    aire: Math.floor(Math.random() * 100) + 50,
-    presion: Math.floor(Math.random() * 80) + 950
-  });
-
-}
-
-// 📈 GENERAR GRÁFICAS
-function crearGrafica(id, label, datos, labels) {
-
-  return new Chart(
-    document.getElementById(id),
-    {
-      type: 'line',
-
-      data: {
-        labels: labels,
-
-        datasets: [{
-          label: label,
-          data: datos,
-          tension: 0.3
-        }]
-      },
-
-      options: {
-        responsive: true,
-        plugins: {
-          legend: {
-            labels: {
-              color: 'white'
-            }
-          }
-        },
-
-        scales: {
-          x: {
-            ticks: {
-              color: 'white'
-            }
-          },
-
-          y: {
-            ticks: {
-              color: 'white'
-            }
-          }
-        }
-      }
-    }
-  );
-}
-
-// 📊 DATOS
-const labels = historial.map(d => d.fecha);
-
-crearGrafica(
-  "graficaTemperatura",
-  "Temperatura °C",
-  historial.map(d => d.temperatura),
-  labels
-);
-
-crearGrafica(
-  "graficaHumedad",
-  "Humedad %",
-  historial.map(d => d.humedad),
-  labels
-);
-
-crearGrafica(
-  "graficaAire",
-  "Calidad Aire",
-  historial.map(d => d.aire),
-  labels
-);
-
-crearGrafica(
-  "graficaPresion",
-  "Presión",
-  historial.map(d => d.presion),
-  labels
-);

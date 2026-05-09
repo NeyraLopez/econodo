@@ -40,9 +40,17 @@ h4{
 }   
 
 .contenedor{
-    display: flex;
+    display: block;
+
+    @include m.tablet{
+        display: flex;
+    }
+
+    main{
+
+    @include m.tablet{
+        flex: 1;
+        }
+    }
 }
 
-main{
-    flex: 1;
-}

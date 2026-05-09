@@ -388,6 +388,39 @@ function promedio(array) {
 
 }
 
-document
-  .querySelector(".btn-filtrar")
-  .addEventListener("click", aplicarFiltros);
+document.querySelector(".btn-filtrar").addEventListener("click", aplicarFiltros);
+
+const botonesGraficas =
+  document.querySelectorAll(".btn-grafica");
+
+const tarjetasGraficas =
+  document.querySelectorAll(".card-grafica");
+
+botonesGraficas.forEach(boton => {
+
+  boton.addEventListener("click", () => {
+
+    // QUITAR ACTIVO BOTONES
+    botonesGraficas.forEach(btn =>
+      btn.classList.remove("activo")
+    );
+
+    // OCULTAR GRAFICAS
+    tarjetasGraficas.forEach(card =>
+      card.classList.remove("activa")
+    );
+
+    // ACTIVAR BOTON
+    boton.classList.add("activo");
+
+    // MOSTRAR GRAFICA
+    const idGrafica =
+      boton.dataset.grafica;
+
+    document
+      .getElementById(idGrafica)
+      .classList.add("activa");
+
+  });
+
+});

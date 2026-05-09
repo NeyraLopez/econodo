@@ -8,8 +8,16 @@
     flex-direction: column;
     padding: 2rem;
 
-    width: 30rem;
-    min-height: 100vh;
+    width: 100%;
+
+    @include m.tablet{
+        width: 25rem;
+         min-height: 100vh;
+    }
+
+    @include m.desktop{
+        width: 30rem;
+    }
 
     a{
         color: $negro;

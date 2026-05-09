@@ -2,22 +2,38 @@
 @use 'base/mixins' as m;
 
 .header{
+    text-align: center;
     background-color: $verde;
     color: $blanco;
-    display: flex;
-    align-items: center;
-    gap: 10rem;
+    padding: 1rem;
     margin: 0;
+
+    @include m.tablet{
+        display: flex;
+        align-items: center;
+        gap: 10rem;
+    }
+
 
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 
     h1{
         margin-left: 1rem;
+        margin: 0;
     }
 
     .info{
-        display: flex;
-        flex-direction: row;
-        gap: 3rem;
+        margin: 0;
+        font-size: 1.5rem;
+        text-align: center;
+
+        @include m.telefono{
+            font-size: 1.8rem;
+        }
+        @include m.tablet{
+            display: flex;
+            flex-direction: row;
+            gap: 3rem;
+        }
     }
 }
