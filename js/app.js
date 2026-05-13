@@ -140,17 +140,14 @@ function actualizarSistema(data) {
   renderAlertas(alertas);
 }
 
-// 🔁 SIMULACIÓN (cada 3 segundos)
-setInterval(() => {
-  const data = obtenerUltimaLectura();
+// 🔁 ACTUALIZACIÓN (cada 3 segundos)
+setInterval(async () => {
+  const data = await obtenerUltimaLectura();
   actualizarSistema(data);
 }, 3000);
 
 
-// 📊 DATOS SIMULADOS
-const historial = obtenerHistorial();
-
-// 📈 GENERAR GRÁFICAS
+// 📈 GENERAR GRÁFICAS (solo si Chart.js y el canvas existen en la página)
 function crearGrafica(id, label, datos, labels) {
   if (typeof Chart === 'undefined' || !document.getElementById(id)) return;
 
@@ -197,33 +194,36 @@ function crearGrafica(id, label, datos, labels) {
   );
 }
 
-// 📊 DATOS
-const labels = historial.map(d => d.fecha);
+// 📊 Inicializar gráficas del dashboard si existen en la página
+(async () => {
+  const historial = await obtenerHistorial();
+  const labels = historial.map(d => d.fecha);
 
-crearGrafica(
-  "graficaTemperatura",
-  "Temperatura °C",
-  historial.map(d => d.temperatura),
-  labels
-);
+  crearGrafica(
+    "graficaTemperatura",
+    "Temperatura °C",
+    historial.map(d => d.temperatura),
+    labels
+  );
 
-crearGrafica(
-  "graficaHumedad",
-  "Humedad %",
-  historial.map(d => d.humedad),
-  labels
-);
+  crearGrafica(
+    "graficaHumedad",
+    "Humedad %",
+    historial.map(d => d.humedad),
+    labels
+  );
 
-crearGrafica(
-  "graficaAire",
-  "Calidad Aire",
-  historial.map(d => d.aire),
-  labels
-);
+  crearGrafica(
+    "graficaAire",
+    "Calidad Aire",
+    historial.map(d => d.aire),
+    labels
+  );
 
-crearGrafica(
-  "graficaPresion",
-  "Presión",
-  historial.map(d => d.presion),
-  labels
-);
+  crearGrafica(
+    "graficaPresion",
+    "Presión",
+    historial.map(d => d.presion),
+    labels
+  );
+})();
