@@ -96,6 +96,7 @@ function getIcono(tipo) {
 // 🖥️ Render alertas
 function renderAlertas(alertas) {
   const panel = document.getElementById("panel-alertas");
+  if (!panel) return;
 
   alertas.forEach(alerta => {
     const card = document.createElement("div");
@@ -123,6 +124,17 @@ function renderAlertas(alertas) {
 
 // 🔄 ACTUALIZACIÓN GENERAL
 function actualizarSistema(data) {
+  const el = (id) => document.getElementById(id);
+
+  if (el('temperatura-valor')) el('temperatura-valor').textContent = `${data.temperatura} °C`;
+  if (el('aire-valor'))        el('aire-valor').textContent        = `${data.calidad_aire}`;
+  if (el('presion-valor'))     el('presion-valor').textContent     = `${data.presion} hPa`;
+  if (el('humedad-valor'))     el('humedad-valor').textContent     = `${data.humedad} %`;
+
+  if (el('temperatura-estado')) el('temperatura-estado').textContent = 'Lectura actual';
+  if (el('aire-estado'))        el('aire-estado').textContent        = 'Lectura actual';
+  if (el('presion-estado'))     el('presion-estado').textContent     = 'Lectura actual';
+  if (el('humedad-estado'))     el('humedad-estado').textContent     = 'Lectura actual';
 
   const alertas = generarAlertas(data);
   renderAlertas(alertas);
@@ -130,28 +142,17 @@ function actualizarSistema(data) {
 
 // 🔁 SIMULACIÓN (cada 3 segundos)
 setInterval(() => {
-  const data = generarDatosFake(); // 👈 luego cambias esto por ESP32
+  const data = obtenerUltimaLectura();
   actualizarSistema(data);
 }, 3000);
 
 
 // 📊 DATOS SIMULADOS
-const historial = [];
-
-for(let i = 1; i <= 30; i++) {
-
-  historial.push({
-    fecha: `2026-04-${i}`,
-    temperatura: Math.floor(Math.random() * 15) + 25,
-    humedad: Math.floor(Math.random() * 50) + 30,
-    aire: Math.floor(Math.random() * 100) + 50,
-    presion: Math.floor(Math.random() * 80) + 950
-  });
-
-}
+const historial = obtenerHistorial();
 
 // 📈 GENERAR GRÁFICAS
 function crearGrafica(id, label, datos, labels) {
+  if (typeof Chart === 'undefined' || !document.getElementById(id)) return;
 
   return new Chart(
     document.getElementById(id),

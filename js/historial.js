@@ -73,31 +73,7 @@ function aplicarFiltros() {
 
 }
 
-const historial = [];
-
-for(let dia = 1; dia <= 30; dia++) {
-
-  for(let hora = 0; hora < 24; hora += 4) {
-
-    historial.push({
-
-      fecha: `2026-04-${dia.toString().padStart(2, '0')}`,
-
-      hora: `${hora.toString().padStart(2, '0')}:00`,
-
-      temperatura: Math.floor(Math.random() * 15) + 25,
-
-      humedad: Math.floor(Math.random() * 50) + 30,
-
-      aire: Math.floor(Math.random() * 100) + 50,
-
-      presion: Math.floor(Math.random() * 80) + 950
-
-    });
-
-  }
-
-}
+const historial = obtenerHistorial();
 
 // 📈 GENERAR GRÁFICAS
 function crearGrafica(id, label, datos, labels) {
