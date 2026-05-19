@@ -1,7 +1,6 @@
 # Credenciales y configuración sensible
 Supabase Econodo Password
 .mcp.json
-js/config.js
 
 # Archivos generados
 graphify-out/
