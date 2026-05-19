@@ -9,3 +9,9 @@ node_modules/
 
 # Secretos locales de Edge Functions
 supabase/functions/**/.env
+
+# Secretos locales del firmware ESP32
+firmware/econodo_esp32/secrets.h
+
+# Firmware antiguo con credenciales hardcodeadas (referencia local únicamente)
+firmware/econodo_esp32_old/
