@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,8 +27,14 @@
 
         <main class="alertas">
 
+            <h2 class="alertas-titulo">⚠️ Monitor de alertas</h2>
+
             <div id="panel-alertas">
-                <p id="sin-alertas" style="text-align:center; padding:2rem; color:#2E7D32; font-size:1.8rem;">✅ Sin alertas activas</p>
+                <div id="sin-alertas" class="sin-alertas-card">
+                    <div class="sin-alertas-icono">✅</div>
+                    <h3 class="sin-alertas-titulo">Todo en orden</h3>
+                    <p class="sin-alertas-desc">No hay alertas activas. Los sensores operan dentro de los rangos normales.</p>
+                </div>
             </div>
 
         </main>

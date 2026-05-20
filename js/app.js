@@ -95,7 +95,7 @@ function generarAlertas(data) {
   if (data.presion < 950 && !alertasActivas["presion"]) {
     nuevas.push({
       tipo: "presion",
-      mensaje: `Presión baja: ${data.presion}`,
+      mensaje: `Presión baja: ${data.presion} hPa`,
       nivel: "precaucion",
       fecha: obtenerFechaHora()
     });
@@ -108,7 +108,7 @@ function generarAlertas(data) {
   if (data.calidad_aire > 150 && !alertasActivas["aire"]) {
     nuevas.push({
       tipo: "aire",
-      mensaje: `Aire contaminado: ${data.calidad_aire}`,
+      mensaje: `Aire contaminado: ${data.calidad_aire} μg/m³`,
       nivel: "peligro",
       fecha: obtenerFechaHora()
     });
@@ -130,6 +130,11 @@ function getIcono(tipo) {
   }[tipo] || "⚠️";
 }
 
+// 🎨 Etiqueta de nivel legible
+function getNivelLabel(nivel) {
+  return nivel === 'peligro' ? 'Peligro' : 'Precaución';
+}
+
 // 🖥️ Render alertas
 function renderAlertas(alertas) {
   const panel = document.getElementById("panel-alertas");
@@ -142,10 +147,13 @@ function renderAlertas(alertas) {
 
     const card = document.createElement("div");
     card.className = `alerta ${alerta.nivel}`;
-    card.style.flexWrap = 'wrap';
     card.innerHTML = `
-      <span>${getIcono(alerta.tipo)} ${alerta.mensaje}</span>
-      <small style="opacity:0.8; margin-left:auto;">🕒 ${alerta.fecha}</small>
+      <div class="alerta-header">
+        <span class="alerta-icono">${getIcono(alerta.tipo)}</span>
+        <span class="alerta-nivel-badge alerta-nivel-badge--${alerta.nivel}">${getNivelLabel(alerta.nivel)}</span>
+        <span class="alerta-tiempo">🕒 ${alerta.fecha}</span>
+      </div>
+      <div class="alerta-mensaje">${alerta.mensaje}</div>
     `;
 
     panel.appendChild(card);

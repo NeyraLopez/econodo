@@ -290,36 +290,140 @@ h4 {
   text-align: center;
 }
 
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.alertas {
+  padding: 2rem;
+}
+@media (min-width: 768px) {
+  .alertas {
+    padding: 2rem 3rem;
+  }
+}
+
+.alertas-titulo {
+  font-size: 2rem;
+  color: #333333;
+  font-weight: 700;
+  margin: 0 0 2rem;
+}
+
 #panel-alertas {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.2rem;
 }
 
-.alertas {
-  margin: 2rem;
+.sin-alertas-card {
+  text-align: center;
+  padding: 4rem 3rem;
+  background: #fff;
+  border-radius: 1.6rem;
+  border: 1.5px solid #A5D6A7;
+  box-shadow: 0 4px 20px rgba(46, 125, 50, 0.08);
+  max-width: 52rem;
+  margin: 2rem auto;
+}
+
+.sin-alertas-icono {
+  font-size: 5rem;
+  line-height: 1;
+  margin-bottom: 1.2rem;
+}
+
+.sin-alertas-titulo {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #2E7D32;
+  margin: 0 0 0.8rem;
+}
+
+.sin-alertas-desc {
+  font-size: 1.6rem;
+  color: #666;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 38rem;
+  margin-inline: auto;
 }
 
 .alerta {
-  padding: 1.5rem;
-  border-radius: 0.8rem;
-  color: #FFFFFF;
-  font-weight: bold;
+  background: #fff;
+  border-radius: 1.2rem;
+  border-left: 5px solid transparent;
+  padding: 1.6rem 2rem;
   display: flex;
-  align-items: center;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0.8rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+  animation: slideIn 0.3s ease forwards;
+}
+@media (min-width: 768px) {
+  .alerta {
+    padding: 1.8rem 2.4rem;
+  }
 }
 
 .peligro {
-  background: #e74c3c;
+  border-left-color: #e74c3c;
 }
 
 .precaucion {
-  background: #f39c12;
+  border-left-color: #f39c12;
 }
 
-.normal {
-  background: #2ecc71;
+.alerta-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.alerta-icono {
+  font-size: 2.2rem;
+  line-height: 1;
+}
+
+.alerta-nivel-badge {
+  font-size: 1.2rem;
+  font-weight: 700;
+  padding: 0.25rem 1rem;
+  border-radius: 10rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.alerta-nivel-badge--peligro {
+  background: #FFEBEE;
+  color: #e74c3c;
+}
+
+.alerta-nivel-badge--precaucion {
+  background: #FFF8E1;
+  color: #f39c12;
+}
+
+.alerta-tiempo {
+  margin-left: auto;
+  font-size: 1.3rem;
+  color: #888;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.alerta-mensaje {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  padding-left: 0.2rem;
 }
 
 .texto {
