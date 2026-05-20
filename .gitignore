@@ -5,6 +5,7 @@ Supabase Econodo Password
 # Archivos generados
 graphify-out/
 node_modules/
+build/css/*.map
 
 # Secretos locales de Edge Functions
 supabase/functions/**/.env

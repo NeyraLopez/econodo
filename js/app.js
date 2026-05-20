@@ -1,6 +1,43 @@
 // 🔴 Estado de alertas activas (evita duplicados)
 let alertasActivas = {};
 
+// 🟢 Calcular estado de calidad del aire (espejo del ESP32)
+function calcularEstado(calidad_aire) {
+  if (calidad_aire > 150) return 'Crítico';
+  if (calidad_aire > 100) return 'Malo';
+  if (calidad_aire > 50)  return 'Moderado';
+  return 'Bueno';
+}
+
+function calcularEstadoTemp(temp) {
+  if (temp > 40)  return 'Muy alta';
+  if (temp > 35)  return 'Alta';
+  if (temp < 10)  return 'Baja';
+  return 'Normal';
+}
+
+function calcularEstadoHumedad(hum) {
+  if (hum > 70) return 'Alta';
+  if (hum < 20) return 'Baja';
+  return 'Normal';
+}
+
+function calcularEstadoPresion(pres) {
+  if (pres < 950) return 'Baja';
+  return 'Normal';
+}
+
+const CLASE_ESTADO = {
+  'Bueno':    'estado-bueno',
+  'Moderado': 'estado-moderado',
+  'Malo':     'estado-malo',
+  'Crítico':  'estado-critico',
+  'Normal':   'estado-normal',
+  'Alta':     'estado-alta',
+  'Muy alta': 'estado-muy-alta',
+  'Baja':     'estado-baja'
+};
+
 // 🎲 Simulador de datos (como si fuera el ESP32)
 function generarDatosFake() {
   return {
@@ -127,15 +164,42 @@ function renderAlertas(alertas) {
 function actualizarSistema(data) {
   const el = (id) => document.getElementById(id);
 
+  // Valores principales
   if (el('temperatura-valor')) el('temperatura-valor').textContent = `${data.temperatura} °C`;
-  if (el('aire-valor'))        el('aire-valor').textContent        = `${data.calidad_aire}`;
   if (el('presion-valor'))     el('presion-valor').textContent     = `${data.presion} hPa`;
   if (el('humedad-valor'))     el('humedad-valor').textContent     = `${data.humedad} %`;
+  if (el('aire-valor'))        el('aire-valor').textContent        = `${data.calidad_aire} μg/m³`;
 
-  if (el('temperatura-estado')) el('temperatura-estado').textContent = 'Lectura actual';
-  if (el('aire-estado'))        el('aire-estado').textContent        = 'Lectura actual';
-  if (el('presion-estado'))     el('presion-estado').textContent     = 'Lectura actual';
-  if (el('humedad-estado'))     el('humedad-estado').textContent     = 'Lectura actual';
+  // Estados con badge para cada sensor
+  const setBadge = (id, texto) => {
+    const node = el(id);
+    if (node) { node.textContent = texto; node.className = 'estado-badge ' + (CLASE_ESTADO[texto] || ''); }
+  };
+
+  setBadge('aire-estado',        calcularEstado(data.calidad_aire));
+  setBadge('temperatura-estado', calcularEstadoTemp(data.temperatura));
+  setBadge('humedad-estado',     calcularEstadoHumedad(data.humedad));
+  setBadge('presion-estado',     calcularEstadoPresion(data.presion));
+
+  // Sub-valores de partículas y VOC
+  if (el('pm25-valor')) el('pm25-valor').textContent = isNaN(data.pm25) ? '--' : data.pm25.toFixed(1);
+  if (el('pm10-valor')) el('pm10-valor').textContent = isNaN(data.pm10) ? '--' : data.pm10.toFixed(1);
+  if (el('voc-valor'))  el('voc-valor').textContent  = isNaN(data.voc)  ? '--' : data.voc.toFixed(1);
+
+  // Última actualización desde Supabase
+  if (el('ultima-actualizacion') && data.created_at) {
+    const dt = new Date(data.created_at);
+    el('ultima-actualizacion').textContent =
+      'Última lectura: ' + dt.toLocaleString('es-MX', {
+        month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+      });
+  }
+
+  // Reloj del header
+  const ahora = new Date();
+  if (el('fecha')) el('fecha').textContent = ahora.toLocaleDateString('es-MX');
+  if (el('hora'))  el('hora').textContent  = ahora.toLocaleTimeString('es-MX');
 
   const alertas = generarAlertas(data);
   renderAlertas(alertas);

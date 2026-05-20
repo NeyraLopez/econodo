@@ -29,7 +29,11 @@ async function obtenerUltimaLectura() {
       temperatura:  parseFloat(f.temperatura),
       humedad:      parseFloat(f.humedad),
       presion:      parseFloat(f.presion),
-      calidad_aire: parseFloat(f.calidad_aire)
+      calidad_aire: parseFloat(f.calidad_aire),
+      pm25:         parseFloat(f.pm25),
+      pm10:         parseFloat(f.pm10),
+      voc:          parseFloat(f.voc),
+      created_at:   f.created_at
     };
   } catch {
     return generarDatosFake();

@@ -124,15 +124,8 @@ h4 {
   .dashboards {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-    justify-content: center;
-    align-items: center;
-  }
-}
-@media (min-width: 1080px) {
-  .dashboards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    align-items: start;
   }
 }
 .dashboards {
@@ -140,28 +133,161 @@ h4 {
 }
 
 .card {
-  height: 20rem;
-  background: white;
-  border-radius: 1.2rem;
-  padding: 2.5rem;
+  min-height: 18rem;
+  background: #fff;
+  border-radius: 1.6rem;
+  padding: 2.4rem 2.4rem 2rem;
   width: 100%;
-  margin-bottom: 1.5rem;
   text-align: center;
-  box-shadow: 0rem 0.4rem 1rem rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-@media (min-width: 990px) {
-  .card {
-    width: 30rem;
-  }
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.13);
+}
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: 1.6rem 1.6rem 0 0;
+}
+.card h2 {
+  font-size: 1.6rem;
+  color: #333333;
+  margin: 0.6rem 0 0;
+  font-weight: 600;
 }
 
-.temperatura p {
+.card--temperatura::before {
+  background: #E64A19;
+}
+
+.card--aire::before {
+  background: #00695C;
+}
+
+.card--presion::before {
+  background: #3949AB;
+}
+
+.card--humedad::before {
+  background: #1565C0;
+}
+
+.card-valor {
   font-size: 4rem;
-  margin: 1rem 0;
+  font-weight: 800;
+  color: #000000;
+  margin: 0.8rem 0 0.6rem;
+  line-height: 1;
+  letter-spacing: -0.02em;
 }
 
-#temp-estado {
-  font-weight: bold;
+.estado-badge {
+  display: inline-block;
+  padding: 0.35rem 1.2rem;
+  border-radius: 10rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+  background: #f0f0f0;
+  color: #333333;
+}
+
+.estado-bueno {
+  background: #E8F5E9;
+  color: #2E7D32;
+}
+
+.estado-moderado {
+  background: #FFF3E0;
+  color: #E65100;
+}
+
+.estado-malo {
+  background: #FBE9E7;
+  color: #BF360C;
+}
+
+.estado-critico {
+  background: #FFEBEE;
+  color: #B71C1C;
+}
+
+.estado-normal {
+  background: #E3F2FD;
+  color: #1565C0;
+}
+
+.estado-alta {
+  background: #FFF3E0;
+  color: #E65100;
+}
+
+.estado-muy-alta {
+  background: #FFEBEE;
+  color: #B71C1C;
+}
+
+.estado-baja {
+  background: #F3E5F5;
+  color: #6A1B9A;
+}
+
+.aire-detalle {
+  display: flex;
+  flex-direction: row;
+  gap: 0.8rem;
+  margin-top: 1.2rem;
+  justify-content: center;
+}
+
+.sub-metrica {
+  flex: 1;
+  background: #f2fbf9;
+  border: 1px solid #b2dfdb;
+  border-radius: 1rem;
+  padding: 0.8rem 0.4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.sub-label {
+  font-size: 1.1rem;
+  color: #777;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.sub-valor {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #000000;
+}
+
+.sub-unidad {
+  font-size: 1rem;
+  color: #aaa;
+}
+
+.ultima-actualizacion {
+  grid-column: 1/-1;
+  width: fit-content;
+  margin: 0.5rem auto 0;
+  padding: 0.5rem 2rem;
+  background: rgba(0, 0, 0, 0.055);
+  border-radius: 10rem;
+  font-size: 1.3rem;
+  color: #555;
+  text-align: center;
 }
 
 #panel-alertas {
@@ -437,3 +563,5 @@ canvas {
     width: 100%;
   }
 }
+
+/*# sourceMappingURL=app.css.map */

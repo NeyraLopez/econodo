@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,29 +27,48 @@
 
         <main class="dashboards">
 
-            <div class="card temperatura">
+            <div class="card card--temperatura">
                 <h2>🌡️ Temperatura</h2>
-                <p id="temperatura-valor">-- °C</p>
-                <span id="temperatura-estado">Cargando...</span>
+                <p class="card-valor" id="temperatura-valor">-- °C</p>
+                <span class="estado-badge" id="temperatura-estado">—</span>
             </div>
 
-            <div class="card temperatura">
+            <div class="card card--aire">
                 <h2>☣️ Calidad del Aire</h2>
-                <p id="aire-valor">--</p>
-                <span id="aire-estado">Cargando...</span>
+                <p class="card-valor" id="aire-valor">--</p>
+                <span class="estado-badge" id="aire-estado">—</span>
+                <div class="aire-detalle">
+                    <div class="sub-metrica">
+                        <span class="sub-label">PM2.5</span>
+                        <strong class="sub-valor" id="pm25-valor">--</strong>
+                        <span class="sub-unidad">μg/m³</span>
+                    </div>
+                    <div class="sub-metrica">
+                        <span class="sub-label">PM10</span>
+                        <strong class="sub-valor" id="pm10-valor">--</strong>
+                        <span class="sub-unidad">μg/m³</span>
+                    </div>
+                    <div class="sub-metrica">
+                        <span class="sub-label">VOC</span>
+                        <strong class="sub-valor" id="voc-valor">--</strong>
+                        <span class="sub-unidad">kΩ</span>
+                    </div>
+                </div>
             </div>
 
-            <div class="card temperatura">
-                <h2>🧭 Presion admosferica</h2>
-                <p id="presion-valor">-- hPa</p>
-                <span id="presion-estado">Cargando...</span>
+            <div class="card card--presion">
+                <h2>🧭 Presión atmosférica</h2>
+                <p class="card-valor" id="presion-valor">-- hPa</p>
+                <span class="estado-badge" id="presion-estado">—</span>
             </div>
 
-            <div class="card temperatura">
+            <div class="card card--humedad">
                 <h2>💧 Humedad</h2>
-                <p id="humedad-valor">-- %</p>
-                <span id="humedad-estado">Cargando...</span>
+                <p class="card-valor" id="humedad-valor">-- %</p>
+                <span class="estado-badge" id="humedad-estado">—</span>
             </div>
+
+            <p id="ultima-actualizacion" class="ultima-actualizacion">—</p>
 
         </main>
     </div>

@@ -1,46 +1,142 @@
 @use 'base/variables' as *;
 @use 'base/mixins' as m;
 
-.dashboards{
+// ─── Colores de acento por sensor ────────────────────────────────────────────
+$accent-temperatura: #E64A19;
+$accent-aire:        #00695C;
+$accent-presion:     #3949AB;
+$accent-humedad:     #1565C0;
 
-    @include m.telefono{
+// ─── Grid ─────────────────────────────────────────────────────────────────────
+.dashboards {
+    @include m.telefono {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
-
-        justify-content: center;
-        align-items: center;
-
+        gap: 1.5rem;
+        align-items: start;
     }
-
-    @include m.desktop{
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-    }
-
     margin: 1.5rem;
 }
-.card {
-    height: 20rem;
-    background: white;
-    border-radius: 1.2rem;
-    padding: 2.5rem;
-    width: 100%;
-    //height:20rem;
-    margin-bottom: 1.5rem;
-    text-align: center;
-    box-shadow: 0rem 0.4rem 1rem rgba(0,0,0,0.1);
 
-    @media(min-width: 990px){
-        width: 30rem;
+// ─── Card base ────────────────────────────────────────────────────────────────
+.card {
+    min-height: 18rem;
+    background: #fff;
+    border-radius: 1.6rem;
+    padding: 2.4rem 2.4rem 2rem;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.13);
+    }
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 4px;
+        border-radius: 1.6rem 1.6rem 0 0;
+    }
+
+    h2 {
+        font-size: 1.6rem;
+        color: $grisTexto;
+        margin: 0.6rem 0 0;
+        font-weight: 600;
     }
 }
 
-.temperatura p {
+// ─── Franjas de acento ────────────────────────────────────────────────────────
+.card--temperatura::before { background: $accent-temperatura; }
+.card--aire::before        { background: $accent-aire; }
+.card--presion::before     { background: $accent-presion; }
+.card--humedad::before     { background: $accent-humedad; }
+
+// ─── Valor principal de métrica ───────────────────────────────────────────────
+.card-valor {
     font-size: 4rem;
-    margin: 1rem 0;
+    font-weight: 800;
+    color: $negro;
+    margin: 0.8rem 0 0.6rem;
+    line-height: 1;
+    letter-spacing: -0.02em;
 }
 
-#temp-estado {
-    font-weight: bold;
+// ─── Badge de estado ──────────────────────────────────────────────────────────
+.estado-badge {
+    display: inline-block;
+    padding: 0.35rem 1.2rem;
+    border-radius: 10rem;
+    font-size: 1.4rem;
+    font-weight: 600;
+    background: #f0f0f0;
+    color: $grisTexto;
+}
+
+.estado-bueno    { background: #E8F5E9; color: #2E7D32; }
+.estado-moderado { background: #FFF3E0; color: #E65100; }
+.estado-malo     { background: #FBE9E7; color: #BF360C; }
+.estado-critico  { background: #FFEBEE; color: #B71C1C; }
+.estado-normal   { background: #E3F2FD; color: #1565C0; }
+.estado-alta     { background: #FFF3E0; color: #E65100; }
+.estado-muy-alta { background: #FFEBEE; color: #B71C1C; }
+.estado-baja     { background: #F3E5F5; color: #6A1B9A; }
+
+// ─── Sub-métricas (PM2.5 / PM10 / VOC) ───────────────────────────────────────
+.aire-detalle {
+    display: flex;
+    flex-direction: row;
+    gap: 0.8rem;
+    margin-top: 1.2rem;
+    justify-content: center;
+}
+
+.sub-metrica {
+    flex: 1;
+    background: #f2fbf9;
+    border: 1px solid #b2dfdb;
+    border-radius: 1rem;
+    padding: 0.8rem 0.4rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+}
+
+.sub-label {
+    font-size: 1.1rem;
+    color: #777;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.sub-valor {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: $negro;
+}
+
+.sub-unidad {
+    font-size: 1rem;
+    color: #aaa;
+}
+
+// ─── Última lectura ───────────────────────────────────────────────────────────
+.ultima-actualizacion {
+    grid-column: 1 / -1;
+    width: fit-content;
+    margin: 0.5rem auto 0;
+    padding: 0.5rem 2rem;
+    background: rgba(0, 0, 0, 0.055);
+    border-radius: 10rem;
+    font-size: 1.3rem;
+    color: #555;
+    text-align: center;
 }
