@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Econodo</title>
+    <title>EcoNodo — Configuración</title>
     <link rel="stylesheet" href="build/css/app.css">
 </head>
 <body>
    <header class="header">
         <h1>Monitoreo Ambiental</h1>
-        
+
         <div class="info">
             <p>Fecha: <span id="fecha"></span></p>
             <p>Hora: <span id="hora"></span></p>
@@ -22,34 +22,35 @@
             <a href="index.html"><img src="src/img/panel.png" alt="IconoDasboard">Dashboard</a>
             <a href="historial.html"><img src="src/img/reloj.png" alt="IconoHistorial">Historial</a>
             <a href="alertas.html"><img src="src/img/peligro.png" alt="IconoAlertas">Alertas</a>
-            <a href="configuracion.html"><img src="src/img/engranaje.png" alt="IconoDasboard">Configuración</a>
+            <a href="configuracion.html"><img src="src/img/engranaje.png" alt="IconoConfig">Configuración</a>
         </nav>
 
         <main class="contenedor-ajustes">
-             <h1 class="texto">⚙️ Configuración</h1>
+            <h1 class="texto">⚙️ Configuración</h1>
 
             <!-- 🌡️ UMBRALES -->
             <div class="card-ajustes">
-                <h2>🌡️ Umbrales</h2>
+                <h2>🌡️ Umbrales de alerta</h2>
+                <p class="card-desc">Valores a partir de los cuales el sistema genera una alerta en la pantalla.</p>
 
                 <div class="grupo">
-                <label>Temperatura máxima (°C)</label>
-                <input type="number" placeholder="35">
+                    <label for="umbral-temperatura">Temperatura máxima (°C)</label>
+                    <input type="number" id="umbral-temperatura" min="0" max="100">
                 </div>
 
                 <div class="grupo">
-                <label>Humedad maxima (%)</label>
-                <input type="number" placeholder="20">
+                    <label for="umbral-humedad">Humedad máxima (%)</label>
+                    <input type="number" id="umbral-humedad" min="0" max="100">
                 </div>
 
                 <div class="grupo">
-                <label>Presión mínima</label>
-                <input type="number" placeholder="950">
+                    <label for="umbral-presion">Presión mínima (hPa)</label>
+                    <input type="number" id="umbral-presion" min="800" max="1100">
                 </div>
 
                 <div class="grupo">
-                <label>Calidad de aire máxima (AQI)</label>
-                <input type="number" placeholder="150">
+                    <label for="umbral-aire">Calidad del aire máxima (μg/m³)</label>
+                    <input type="number" id="umbral-aire" min="0" max="500">
                 </div>
             </div>
 
@@ -58,58 +59,49 @@
                 <h2>🔔 Alertas</h2>
 
                 <div class="grupo horizontal">
-                <label>Activar sonido</label>
-                <input type="checkbox">
+                    <label for="alerta-sonido">Activar sonido al alertar</label>
+                    <input type="checkbox" id="alerta-sonido">
                 </div>
 
                 <div class="grupo horizontal">
-                <label>Alertar solo si dura (segundos)</label>
-                <input type="number" placeholder="10">
+                    <label for="alerta-duracion">Duración de cada alerta (segundos)</label>
+                    <input type="number" id="alerta-duracion" min="5" max="120">
                 </div>
 
                 <div class="grupo">
-                <label>Tipos de alerta</label>
-                <div class="checkboxes">
-                    <label><input type="checkbox" checked> Temperatura</label>
-                    <label><input type="checkbox" checked> Humedad</label>
-                    <label><input type="checkbox" checked> Presión</label>
-                    <label><input type="checkbox" checked> Aire</label>
-                </div>
+                    <label>Tipos de alerta activos</label>
+                    <div class="checkboxes">
+                        <label><input type="checkbox" id="tipo-temperatura"> 🌡️ Temperatura</label>
+                        <label><input type="checkbox" id="tipo-humedad"> 💧 Humedad</label>
+                        <label><input type="checkbox" id="tipo-presion"> 🌪️ Presión</label>
+                        <label><input type="checkbox" id="tipo-aire"> ☣️ Aire</label>
+                    </div>
                 </div>
             </div>
 
-            <!-- 📊 HISTORIAL -->
+            <!-- 📡 SISTEMA -->
             <div class="card-ajustes">
-                <h2>📊 Historial</h2>
-
-                <div class="grupo">
-                <label>Guardar datos cada (minutos)</label>
-                <input type="number" placeholder="5">
-                </div>
-
-                <button class="btn-secundario">📥 Descargar historial</button>
+                <h2>📡 Sistema</h2>
+                <p class="sistema-info">
+                    Las lecturas llegan automáticamente desde el nodo <strong>ECONODO_001</strong>
+                    a través de Supabase cada 30 segundos.<br>
+                    La configuración de este panel solo afecta la visualización del frontend,
+                    no la frecuencia de envío del dispositivo.
+                </p>
             </div>
 
-            <!-- 📡 DISPOSITIVO -->
-            <div class="card-ajustes">
-                <h2>📡 Dispositivo</h2>
+            <!-- Mensaje de éxito -->
+            <p id="mensaje-guardado" class="mensaje-guardado"></p>
 
-                <div class="grupo">
-                <label>IP del dispositivo</label>
-                <input type="text" placeholder="192.168.1.10">
-                </div>
-
-                <div class="estado">
-                Estado: <span class="conectado">🟢 Conectado</span>
-                </div>
+            <!-- Acciones -->
+            <div class="config-acciones">
+                <button id="btn-guardar" class="btn-principal">💾 Guardar configuración</button>
+                <button id="btn-restaurar" class="btn-restaurar">↺ Restaurar valores por defecto</button>
             </div>
-
-            <!-- 💾 BOTÓN -->
-            <button class="btn-principal">💾 Guardar configuración</button>
 
         </main>
     </div>
 
-    <script src="js/app.js"></script>
+    <script src="js/configuracion.js"></script>
 </body>
 </html>

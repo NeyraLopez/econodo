@@ -38,6 +38,32 @@ const CLASE_ESTADO = {
   'Baja':     'estado-baja'
 };
 
+// 🔧 Leer umbrales y tipos de alerta desde localStorage (con fallback a defaults)
+function obtenerUmbrales() {
+  try {
+    const guardado = localStorage.getItem('econodo_config');
+    const config = guardado ? JSON.parse(guardado) : {};
+    const tipos = config.tipos_alerta || {};
+    return {
+      temperatura: config.umbral_temperatura ?? 40,
+      humedad:     config.umbral_humedad     ?? 80,
+      presion:     config.umbral_presion     ?? 950,
+      aire:        config.umbral_aire        ?? 150,
+      tipos: {
+        temperatura: tipos.temperatura ?? true,
+        humedad:     tipos.humedad     ?? true,
+        presion:     tipos.presion     ?? true,
+        aire:        tipos.aire        ?? true
+      }
+    };
+  } catch {
+    return {
+      temperatura: 40, humedad: 80, presion: 950, aire: 150,
+      tipos: { temperatura: true, humedad: true, presion: true, aire: true }
+    };
+  }
+}
+
 // 🎲 Simulador de datos (como si fuera el ESP32)
 function generarDatosFake() {
   return {
@@ -61,12 +87,13 @@ function obtenerFechaHora() {
   });
 }
 
-// 🧠 Generar alertas
+// 🧠 Generar alertas (umbrales leídos desde localStorage si están configurados)
 function generarAlertas(data) {
+  const u = obtenerUmbrales();
   let nuevas = [];
 
   // 🌡️ Temperatura
-  if (data.temperatura > 40 && !alertasActivas["temperatura"]) {
+  if (u.tipos.temperatura && data.temperatura > u.temperatura && !alertasActivas["temperatura"]) {
     nuevas.push({
       tipo: "temperatura",
       mensaje: `Temperatura alta: ${data.temperatura}°C`,
@@ -74,12 +101,12 @@ function generarAlertas(data) {
       fecha: obtenerFechaHora()
     });
     alertasActivas["temperatura"] = true;
-  } else if (data.temperatura <= 40) {
+  } else if (!u.tipos.temperatura || data.temperatura <= u.temperatura) {
     alertasActivas["temperatura"] = false;
   }
 
   // 💧 Humedad
-  if (data.humedad >= 80 && !alertasActivas["humedad"]) {
+  if (u.tipos.humedad && data.humedad >= u.humedad && !alertasActivas["humedad"]) {
     nuevas.push({
       tipo: "humedad",
       mensaje: `Humedad alta: ${data.humedad}%`,
@@ -87,12 +114,12 @@ function generarAlertas(data) {
       fecha: obtenerFechaHora()
     });
     alertasActivas["humedad"] = true;
-  } else if (data.humedad < 80) {
+  } else if (!u.tipos.humedad || data.humedad < u.humedad) {
     alertasActivas["humedad"] = false;
   }
 
   // 🌪️ Presión
-  if (data.presion < 950 && !alertasActivas["presion"]) {
+  if (u.tipos.presion && data.presion < u.presion && !alertasActivas["presion"]) {
     nuevas.push({
       tipo: "presion",
       mensaje: `Presión baja: ${data.presion} hPa`,
@@ -100,12 +127,12 @@ function generarAlertas(data) {
       fecha: obtenerFechaHora()
     });
     alertasActivas["presion"] = true;
-  } else if (data.presion >= 950) {
+  } else if (!u.tipos.presion || data.presion >= u.presion) {
     alertasActivas["presion"] = false;
   }
 
   // ☣️ Aire
-  if (data.calidad_aire > 150 && !alertasActivas["aire"]) {
+  if (u.tipos.aire && data.calidad_aire > u.aire && !alertasActivas["aire"]) {
     nuevas.push({
       tipo: "aire",
       mensaje: `Aire contaminado: ${data.calidad_aire} μg/m³`,
@@ -113,11 +140,43 @@ function generarAlertas(data) {
       fecha: obtenerFechaHora()
     });
     alertasActivas["aire"] = true;
-  } else if (data.calidad_aire <= 150) {
+  } else if (!u.tipos.aire || data.calidad_aire <= u.aire) {
     alertasActivas["aire"] = false;
   }
 
   return nuevas;
+}
+
+// 🔊 Leer duración y sonido desde localStorage
+function obtenerConfigAlerta() {
+  try {
+    const guardado = localStorage.getItem('econodo_config');
+    const config = guardado ? JSON.parse(guardado) : {};
+    return {
+      duracion: (config.duracion_alerta ?? 20) * 1000,
+      sonido:   config.sonido ?? false
+    };
+  } catch {
+    return { duracion: 20000, sonido: false };
+  }
+}
+
+// 🔊 Beep corto con Web Audio API (solo si sonido está activado)
+function emitirBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.25, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.15);
+  } catch {
+    // Web Audio API no disponible — falla silenciosamente
+  }
 }
 
 // 🎨 Iconos
@@ -145,6 +204,9 @@ function renderAlertas(alertas) {
   alertas.forEach(alerta => {
     if (sinAlertas) sinAlertas.style.display = 'none';
 
+    const { duracion, sonido } = obtenerConfigAlerta();
+    if (sonido) emitirBeep();
+
     const card = document.createElement("div");
     card.className = `alerta ${alerta.nivel}`;
     card.innerHTML = `
@@ -163,7 +225,7 @@ function renderAlertas(alertas) {
       if (sinAlertas && panel.querySelectorAll('.alerta').length === 0) {
         sinAlertas.style.display = '';
       }
-    }, 20000);
+    }, duracion);
   });
 }
 
