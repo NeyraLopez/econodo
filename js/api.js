@@ -46,7 +46,7 @@ async function obtenerHistorial() {
   }
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/lecturas?select=*&order=created_at.desc&limit=200`,
+      `${SUPABASE_URL}/rest/v1/lecturas?select=*&order=created_at.asc&limit=200`,
       {
         headers: {
           'apikey': SUPABASE_ANON_KEY,

@@ -1,38 +1,84 @@
 // 📊 HISTORIAL — EcoNodo
 
-const filtroDia = document.getElementById("filtro-dia");
-
-for (let i = 1; i <= 30; i++) {
-  const option = document.createElement("option");
-  option.value = i;
-  option.textContent = i;
-  filtroDia.appendChild(option);
-}
+// Colores de línea por sensor (consistentes con el dashboard)
+const SENSOR_COLORS = {
+  temperatura: { border: '#E64A19', background: 'rgba(230,74,25,0.08)' },
+  humedad:     { border: '#1565C0', background: 'rgba(21,101,192,0.08)' },
+  aire:        { border: '#00695C', background: 'rgba(0,105,92,0.08)'  },
+  presion:     { border: '#3949AB', background: 'rgba(57,73,171,0.08)' }
+};
 
 // Módulo-nivel: se populan en init() antes de cualquier interacción del usuario
 let historial = [];
 let graficaTemperatura, graficaHumedad, graficaAire, graficaPresion;
+let periodoActivo = 'hoy';
 
-function aplicarFiltros() {
-  const anio = document.getElementById("filtro-anio").value;
-  const mes  = document.getElementById("filtro-mes").value;
-  const dia  = document.getElementById("filtro-dia").value;
-
-  if (anio !== "Todos" && mes === "Todos" && dia === "Todos") {
-    promedioPorMes(anio);
-  } else if (anio !== "Todos" && mes !== "Todos" && dia === "Todos") {
-    datosPorMes(anio, mes);
-  } else if (anio !== "Todos" && mes !== "Todos" && dia !== "Todos") {
-    datosPorDia(anio, mes, dia);
-  } else {
-    actualizarGraficasDatos(
-      historial,
-      d => `${d.fecha} ${d.hora}`
-    );
-  }
+// ─── Sin datos ────────────────────────────────────────────────────────────────
+function mostrarSinDatos() {
+  const sinDatos = document.getElementById('sin-datos');
+  const contenedor = document.querySelector('.contenedor-graficas');
+  if (sinDatos) sinDatos.style.display = '';
+  if (contenedor) contenedor.style.display = 'none';
 }
 
-function crearGrafica(id, label, datos, labels) {
+function ocultarSinDatos() {
+  const sinDatos = document.getElementById('sin-datos');
+  const contenedor = document.querySelector('.contenedor-graficas');
+  if (sinDatos) sinDatos.style.display = 'none';
+  if (contenedor) contenedor.style.display = '';
+}
+
+// Devuelve la fecha local del dispositivo en formato YYYY-MM-DD
+function obtenerFechaLocalISO(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+// Convierte una lectura (fecha+hora en UTC de Supabase) a objeto Date UTC correcto
+function obtenerDateLectura(d) {
+  return new Date(`${d.fecha}T${d.hora}:00Z`);
+}
+
+// ─── Filtros de período ───────────────────────────────────────────────────────
+function filtrarPorPeriodo(periodo) {
+  periodoActivo = periodo;
+  const ahora = new Date();
+  let filtrados;
+
+  if (periodo === 'hoy') {
+    // Compara fecha local de "ahora" contra fecha local de cada lectura
+    const hoy = obtenerFechaLocalISO(ahora);
+    filtrados = historial.filter(d => obtenerFechaLocalISO(obtenerDateLectura(d)) === hoy);
+  } else if (periodo === '7d') {
+    const limite = new Date(ahora - 7 * 24 * 60 * 60 * 1000);
+    filtrados = historial.filter(d => obtenerDateLectura(d) >= limite);
+  } else if (periodo === '30d') {
+    const limite = new Date(ahora - 30 * 24 * 60 * 60 * 1000);
+    filtrados = historial.filter(d => obtenerDateLectura(d) >= limite);
+  } else {
+    filtrados = historial;
+  }
+
+  if (filtrados.length === 0) {
+    mostrarSinDatos();
+    return;
+  }
+
+  ocultarSinDatos();
+
+  const labelFn = periodo === 'hoy'
+    ? d => d.hora
+    : d => `${d.fecha.slice(5)} ${d.hora}`;
+
+  actualizarGraficasDatos(filtrados, labelFn);
+}
+
+// ─── Crear gráfica ────────────────────────────────────────────────────────────
+function crearGrafica(id, label, datos, labels, colorKey) {
+  const colores = SENSOR_COLORS[colorKey] || { border: '#2E7D32', background: 'rgba(46,125,50,0.08)' };
+
   return new Chart(document.getElementById(id), {
     type: 'line',
     data: {
@@ -40,52 +86,46 @@ function crearGrafica(id, label, datos, labels) {
       datasets: [{
         label: label,
         data: datos,
-        borderWidth: 3,
+        borderColor: colores.border,
+        backgroundColor: colores.background,
+        borderWidth: 2.5,
         tension: 0.4,
         fill: true,
-        pointRadius: 3,
-        pointHoverRadius: 6
+        pointRadius: 2,
+        pointHoverRadius: 5,
+        pointBackgroundColor: colores.border
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      interaction: {
-        mode: 'index',
-        intersect: false
-      },
+      interaction: { mode: 'index', intersect: false },
       plugins: {
         legend: {
-          labels: {
-            color: 'black'
-          }
+          labels: { color: '#444', font: { size: 13 } }
         }
       },
       scales: {
         x: {
           ticks: {
-            color: 'black',
+            color: '#666',
             maxRotation: 0,
             autoSkip: true,
-            maxTicksLimit: 8
+            maxTicksLimit: 8,
+            font: { size: 11 }
           },
-          grid: {
-            color: 'rgba(255,255,255,0.05)'
-          }
+          grid: { color: 'rgba(0,0,0,0.06)' }
         },
         y: {
-          ticks: {
-            color: 'black'
-          },
-          grid: {
-            color: 'rgba(255,255,255,0.05)'
-          }
+          ticks: { color: '#666', font: { size: 11 } },
+          grid: { color: 'rgba(0,0,0,0.06)' }
         }
       }
     }
   });
 }
 
+// ─── Actualizar gráficas ──────────────────────────────────────────────────────
 function actualizarGraficasDatos(datos, callbackLabel) {
   actualizarGraficasCustom(
     datos.map(callbackLabel),
@@ -114,106 +154,62 @@ function actualizarGraficasCustom(labels, temperaturas, humedades, aires, presio
   graficaPresion.update();
 }
 
-function promedioPorMes(anio) {
-  const meses = {};
-
-  historial.forEach(dato => {
-    const [y, m] = dato.fecha.split("-");
-    if (y === anio) {
-      if (!meses[m]) {
-        meses[m] = { temperatura: [], humedad: [], aire: [], presion: [] };
-      }
-      meses[m].temperatura.push(dato.temperatura);
-      meses[m].humedad.push(dato.humedad);
-      meses[m].aire.push(dato.aire);
-      meses[m].presion.push(dato.presion);
-    }
-  });
-
-  const labels = Object.keys(meses);
-
-  actualizarGraficasCustom(
-    labels,
-    labels.map(m => promedio(meses[m].temperatura)),
-    labels.map(m => promedio(meses[m].humedad)),
-    labels.map(m => promedio(meses[m].aire)),
-    labels.map(m => promedio(meses[m].presion))
-  );
-}
-
-function datosPorMes(anio, mes) {
-  const dias = {};
-
-  historial.forEach(dato => {
-    const [y, m, d] = dato.fecha.split("-");
-    if (y === anio && m === mes) {
-      if (!dias[d]) {
-        dias[d] = { temperatura: [], humedad: [], aire: [], presion: [] };
-      }
-      dias[d].temperatura.push(dato.temperatura);
-      dias[d].humedad.push(dato.humedad);
-      dias[d].aire.push(dato.aire);
-      dias[d].presion.push(dato.presion);
-    }
-  });
-
-  const labels = Object.keys(dias);
-
-  actualizarGraficasCustom(
-    labels,
-    labels.map(d => promedio(dias[d].temperatura)),
-    labels.map(d => promedio(dias[d].humedad)),
-    labels.map(d => promedio(dias[d].aire)),
-    labels.map(d => promedio(dias[d].presion))
-  );
-}
-
-function datosPorDia(anio, mes, dia) {
-  const filtrados = historial.filter(d => {
-    const [y, m, day] = d.fecha.split("-");
-    return y === anio && m === mes && day === dia.padStart(2, '0');
-  });
-
-  actualizarGraficasDatos(filtrados, d => d.hora);
-}
-
 function promedio(array) {
   return (array.reduce((a, b) => a + b, 0) / array.length).toFixed(1);
 }
 
+// ─── Init ──────────────────────────────────────────────────────────────────────
 async function init() {
   historial = await obtenerHistorial();
 
+  const labels = historial.map(d => d.hora);
+
   graficaTemperatura = crearGrafica(
     "graficaTemperatura",
-    "Temperatura °C",
+    "Temperatura (°C)",
     historial.map(d => d.temperatura),
-    historial.map(d => `${d.fecha} ${d.hora}`)
+    labels,
+    'temperatura'
   );
 
   graficaHumedad = crearGrafica(
     "graficaHumedad",
-    "Humedad %",
+    "Humedad (%)",
     historial.map(d => d.humedad),
-    historial.map(d => `${d.fecha} ${d.hora}`)
+    labels,
+    'humedad'
   );
 
   graficaAire = crearGrafica(
     "graficaAire",
-    "Calidad Aire",
+    "Calidad del Aire (μg/m³)",
     historial.map(d => d.aire),
-    historial.map(d => `${d.fecha} ${d.hora}`)
+    labels,
+    'aire'
   );
 
   graficaPresion = crearGrafica(
     "graficaPresion",
-    "Presión",
+    "Presión (hPa)",
     historial.map(d => d.presion),
-    historial.map(d => `${d.fecha} ${d.hora}`)
+    labels,
+    'presion'
   );
+
+  // Aplicar filtro inicial (Hoy) después de crear las gráficas
+  filtrarPorPeriodo('hoy');
 }
 
-document.querySelector(".btn-filtrar").addEventListener("click", aplicarFiltros);
+// ─── Event listeners ──────────────────────────────────────────────────────────
+
+// Selector de período
+document.querySelectorAll('.btn-periodo').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.btn-periodo').forEach(b => b.classList.remove('activo'));
+    btn.classList.add('activo');
+    filtrarPorPeriodo(btn.dataset.periodo);
+  });
+});
 
 // Mostrar la gráfica de temperatura al cargar
 document.getElementById('temperatura').classList.add('activa');
@@ -230,3 +226,14 @@ document.querySelectorAll('.btn-grafica').forEach(btn => {
 });
 
 init();
+
+// Actualizar fecha y hora del header (igual que el dashboard)
+function actualizarReloj() {
+  const ahora = new Date();
+  const elFecha = document.getElementById('fecha');
+  const elHora  = document.getElementById('hora');
+  if (elFecha) elFecha.textContent = ahora.toLocaleDateString('es-MX');
+  if (elHora)  elHora.textContent  = ahora.toLocaleTimeString('es-MX');
+}
+actualizarReloj();
+setInterval(actualizarReloj, 1000);

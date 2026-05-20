@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -30,47 +30,12 @@
                 <h1>📊 Historial Ambiental</h1>
             </div>
 
-            <!-- FILTROS -->
-            <div class="filtros">
-
-                <div class="grupo">
-                    <label>Año</label>
-                    <select id="filtro-anio">
-                        <option value="Todos">Todos</option>
-                        <option value="2026">2026</option>
-                    </select>
-                </div>
-
-                <div class="grupo">
-                    <label>Mes</label>
-                    <select id="filtro-mes">
-                        <option value="Todos">Todos</option>
-                        <option value="01">Enero</option>
-                        <option value="02">Febrero</option>
-                        <option value="03">Marzo</option>
-                        <option value="04">Abril</option>
-                        <option value="05">Mayo</option>
-                        <option value="06">Junio</option>
-                        <option value="07">Julio</option>
-                        <option value="08">Agosto</option>
-                        <option value="09">Septiembre</option>
-                        <option value="10">Octubre</option>
-                        <option value="11">Noviembre</option>
-                        <option value="12">Diciembre</option>
-                    </select>
-                </div>
-
-                <div class="grupo">
-                    <label>Día</label>
-                    <select id="filtro-dia">
-                        <option value="Todos">Todos</option>
-                    </select>
-                </div>
-
-                <button class="btn-filtrar">
-                Aplicar filtros
-                </button>
-
+            <!-- FILTROS DE PERÍODO -->
+            <div class="filtros-periodo">
+                <button class="btn-periodo activo" data-periodo="hoy">Hoy</button>
+                <button class="btn-periodo" data-periodo="7d">7 días</button>
+                <button class="btn-periodo" data-periodo="30d">30 días</button>
+                <button class="btn-periodo" data-periodo="todo">Todo</button>
             </div>
 
             <!-- SELECTOR DE GRAFICAS -->
@@ -92,6 +57,13 @@
                     🌪️ Presión
                 </button>
 
+            </div>
+
+            <!-- ESTADO VACÍO -->
+            <div id="sin-datos" class="sin-datos-card" style="display:none;">
+                <div class="sin-datos-icono">📊</div>
+                <h3 class="sin-datos-titulo">Sin datos para este período</h3>
+                <p class="sin-datos-desc">No hay lecturas registradas en el rango seleccionado.</p>
             </div>
 
             <!-- GRAFICAS -->

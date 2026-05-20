@@ -1,9 +1,13 @@
 @use 'base/variables' as *;
 @use 'base/mixins' as m;
 
-
+// ─── Contenedor principal ─────────────────────────────────────────────────────
 .historial {
   padding: 2rem;
+
+  @include m.tablet {
+    padding: 2rem 3rem;
+  }
 }
 
 .encabezado-historial {
@@ -11,94 +15,108 @@
 
   h1 {
     margin: 0;
-    font-size: 2rem;
-  }
-}
-
-.selector-graficas{
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
-
-  button{
-    border: none;
-    padding: 1rem 1.5rem;
-    border-radius: 1rem;
-    cursor: pointer;
-    background-color: $verde;
-    transition: .3s ease;
-    font-weight: bold;
-  }
-}
-
-
-.btn-grafica:hover{
-  transform: translateY(-3px);
-}
-
-.btn-grafica.activo{
-  background-color: $botonHover;
-  color: $blanco;
-}
-
-.card-grafica{
-  display: none;
-}
-
-.card-grafica.activa{
-  display: block;
-}
-
-.filtros {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-  align-items: end;
-
-  background: $blanco;
-  padding: 1.5rem;
-  border-radius: 1rem;
-  margin-bottom: 2rem;
-  border: 1px solid $border;
-}
-
-.grupo {
-  display: flex;
-  flex-direction: column;
-  gap: .5rem;
-
-  label {
-    font-size: .9rem;
+    font-size: 2.2rem;
+    font-weight: 700;
     color: $grisTexto;
   }
 }
 
-select {
-  min-width: 10rem;
-  background: $acento;
-  color: $grisTexto;
-  border: none;
-  padding: .8rem;
-  border-radius: .8rem;
-  outline: none;
+// ─── Filtros de período (chips) ───────────────────────────────────────────────
+.filtros-periodo {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
 }
 
-.btn-filtrar {
-  background: $verde;
-  color: $blanco;
-  border: none;
-  padding: .85rem 1.5rem;
-  border-radius: .8rem;
+.btn-periodo {
+  border: 1.5px solid #d0d0d0;
+  background: #fff;
+  color: $grisTexto;
+  padding: 0.7rem 1.8rem;
+  border-radius: 10rem;
   cursor: pointer;
-  font-weight: bold;
-  transition: .3s;
+  font-size: 1.5rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
 
   &:hover {
-    transform: translateY(-2px);
+    border-color: $verde;
+    color: $verde;
+  }
+
+  &.activo {
+    background: $verde;
+    border-color: $verde;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(46, 125, 50, 0.25);
   }
 }
 
+// ─── Selector de gráficas (tabs) ──────────────────────────────────────────────
+.selector-graficas {
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.btn-grafica {
+  border: none;
+  padding: 0.9rem 1.6rem;
+  border-radius: 0.8rem;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.05);
+  color: #555;
+  font-size: 1.5rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.09);
+    transform: translateY(-1px);
+  }
+
+  &.activo {
+    background: #fff;
+    color: $negro;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+  }
+}
+
+// ─── Estado vacío ─────────────────────────────────────────────────────────────
+.sin-datos-card {
+  text-align: center;
+  padding: 4rem 3rem;
+  background: #fff;
+  border-radius: 1.6rem;
+  border: 1.5px solid #e0e0e0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  max-width: 52rem;
+  margin: 2rem auto;
+}
+
+.sin-datos-icono {
+  font-size: 5rem;
+  line-height: 1;
+  margin-bottom: 1.2rem;
+}
+
+.sin-datos-titulo {
+  font-size: 2rem;
+  font-weight: 700;
+  color: $grisTexto;
+  margin: 0 0 0.8rem;
+}
+
+.sin-datos-desc {
+  font-size: 1.5rem;
+  color: #888;
+  line-height: 1.6;
+  margin: 0;
+}
+
+// ─── Contenedor de gráficas ───────────────────────────────────────────────────
 .contenedor-graficas {
   display: grid;
   grid-template-columns: 1fr;
@@ -106,57 +124,65 @@ select {
 }
 
 .card-grafica {
-  background: $beish;
-  color: $grisTexto;
-  border-radius: 1.2rem;
-  padding: 1.5rem;
-  border: 1px solid $border;
-  transition: .3s;
+  display: none;
+  background: #fff;
+  border-radius: 1.4rem;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+  border: none;
+  transition: box-shadow 0.2s ease;
 
+  &.activa {
+    display: block;
+  }
+
+  &:hover {
+    box-shadow: 0 6px 28px rgba(0, 0, 0, 0.1);
+  }
 }
 
 .titulo-card {
-  color: $grisTexto;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 1.2rem;
 
   h2 {
     color: $grisTexto;
     margin: 0;
-    font-size: 1.2rem;
+    font-size: 1.6rem;
+    font-weight: 700;
   }
 }
 
 .grafica-wrapper {
-  color: $grisTexto;
   position: relative;
   width: 100%;
   height: 28rem;
+
+  @media (max-width: #{$telefono}) {
+    height: 22rem;
+  }
 }
 
-canvas {
+// Selector específico para no afectar canvases en otras páginas
+.grafica-wrapper canvas {
   width: 100% !important;
   height: 100% !important;
-  color: $grisTexto;
 }
 
-@media (max-width: $telefono){
+// ─── Responsive ───────────────────────────────────────────────────────────────
+@media (max-width: #{$telefono}) {
   .historial {
     padding: 1rem;
   }
 
-  .grafica-wrapper {
-    height: 22rem;
+  .filtros-periodo {
+    gap: 0.6rem;
   }
 
-  .filtros {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  select {
-    width: 100%;
+  .btn-periodo {
+    font-size: 1.4rem;
+    padding: 0.6rem 1.4rem;
   }
 }
