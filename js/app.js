@@ -96,6 +96,7 @@ function getIcono(tipo) {
 // 🖥️ Render alertas
 function renderAlertas(alertas) {
   const panel = document.getElementById("panel-alertas");
+  if (!panel) return;
 
   alertas.forEach(alerta => {
     const card = document.createElement("div");
@@ -123,15 +124,106 @@ function renderAlertas(alertas) {
 
 // 🔄 ACTUALIZACIÓN GENERAL
 function actualizarSistema(data) {
+  const el = (id) => document.getElementById(id);
+
+  if (el('temperatura-valor')) el('temperatura-valor').textContent = `${data.temperatura} °C`;
+  if (el('aire-valor'))        el('aire-valor').textContent        = `${data.calidad_aire}`;
+  if (el('presion-valor'))     el('presion-valor').textContent     = `${data.presion} hPa`;
+  if (el('humedad-valor'))     el('humedad-valor').textContent     = `${data.humedad} %`;
+
+  if (el('temperatura-estado')) el('temperatura-estado').textContent = 'Lectura actual';
+  if (el('aire-estado'))        el('aire-estado').textContent        = 'Lectura actual';
+  if (el('presion-estado'))     el('presion-estado').textContent     = 'Lectura actual';
+  if (el('humedad-estado'))     el('humedad-estado').textContent     = 'Lectura actual';
 
   const alertas = generarAlertas(data);
   renderAlertas(alertas);
 }
 
-// 🔁 SIMULACIÓN (cada 3 segundos)
-setInterval(() => {
-  const data = generarDatosFake(); // 👈 luego cambias esto por ESP32
+// 🔁 ACTUALIZACIÓN (cada 3 segundos)
+setInterval(async () => {
+  const data = await obtenerUltimaLectura();
   actualizarSistema(data);
 }, 3000);
 
 
+// 📈 GENERAR GRÁFICAS (solo si Chart.js y el canvas existen en la página)
+function crearGrafica(id, label, datos, labels) {
+  if (typeof Chart === 'undefined' || !document.getElementById(id)) return;
+
+  return new Chart(
+    document.getElementById(id),
+    {
+      type: 'line',
+
+      data: {
+        labels: labels,
+
+        datasets: [{
+          label: label,
+          data: datos,
+          tension: 0.3
+        }]
+      },
+
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            labels: {
+              color: 'white'
+            }
+          }
+        },
+
+        scales: {
+          x: {
+            ticks: {
+              color: 'white'
+            }
+          },
+
+          y: {
+            ticks: {
+              color: 'white'
+            }
+          }
+        }
+      }
+    }
+  );
+}
+
+// 📊 Inicializar gráficas del dashboard si existen en la página
+(async () => {
+  const historial = await obtenerHistorial();
+  const labels = historial.map(d => d.fecha);
+
+  crearGrafica(
+    "graficaTemperatura",
+    "Temperatura °C",
+    historial.map(d => d.temperatura),
+    labels
+  );
+
+  crearGrafica(
+    "graficaHumedad",
+    "Humedad %",
+    historial.map(d => d.humedad),
+    labels
+  );
+
+  crearGrafica(
+    "graficaAire",
+    "Calidad Aire",
+    historial.map(d => d.aire),
+    labels
+  );
+
+  crearGrafica(
+    "graficaPresion",
+    "Presión",
+    historial.map(d => d.presion),
+    labels
+  );
+})();
