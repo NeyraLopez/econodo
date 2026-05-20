@@ -98,26 +98,27 @@ function renderAlertas(alertas) {
   const panel = document.getElementById("panel-alertas");
   if (!panel) return;
 
+  const sinAlertas = document.getElementById("sin-alertas");
+
   alertas.forEach(alerta => {
+    if (sinAlertas) sinAlertas.style.display = 'none';
+
     const card = document.createElement("div");
     card.className = `alerta ${alerta.nivel}`;
-
+    card.style.flexWrap = 'wrap';
     card.innerHTML = `
-      <div style="display:flex; justify-content:space-between; gap: 20rem; flex-direction:row; ">
-        <div>
-          ${getIcono(alerta.tipo)} ${alerta.mensaje}
-        </div>
-
-        <small style="opacity:0.8;">
-          🕒 ${alerta.fecha}
-          </small>
-      </div>
+      <span>${getIcono(alerta.tipo)} ${alerta.mensaje}</span>
+      <small style="opacity:0.8; margin-left:auto;">🕒 ${alerta.fecha}</small>
     `;
 
     panel.appendChild(card);
 
-    // ❌ se elimina después de 20 seg
-    setTimeout(() => card.remove(), 20000);
+    setTimeout(() => {
+      card.remove();
+      if (sinAlertas && panel.querySelectorAll('.alerta').length === 0) {
+        sinAlertas.style.display = '';
+      }
+    }, 20000);
   });
 }
 

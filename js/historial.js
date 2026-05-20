@@ -14,8 +14,6 @@ let historial = [];
 let graficaTemperatura, graficaHumedad, graficaAire, graficaPresion;
 
 function aplicarFiltros() {
-  console.log("FILTRO EJECUTADO");
-
   const anio = document.getElementById("filtro-anio").value;
   const mes  = document.getElementById("filtro-mes").value;
   const dia  = document.getElementById("filtro-dia").value;
@@ -216,5 +214,19 @@ async function init() {
 }
 
 document.querySelector(".btn-filtrar").addEventListener("click", aplicarFiltros);
+
+// Mostrar la gráfica de temperatura al cargar
+document.getElementById('temperatura').classList.add('activa');
+
+// Selector de gráficas: mostrar solo la seleccionada
+document.querySelectorAll('.btn-grafica').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const objetivo = btn.dataset.grafica;
+    document.querySelectorAll('.btn-grafica').forEach(b => b.classList.remove('activo'));
+    btn.classList.add('activo');
+    document.querySelectorAll('.card-grafica').forEach(c => c.classList.remove('activa'));
+    document.getElementById(objetivo).classList.add('activa');
+  });
+});
 
 init();
