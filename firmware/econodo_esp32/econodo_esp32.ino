@@ -13,6 +13,43 @@
 #include "secrets.h"  // Copia secrets.example.h → secrets.h y rellena valores reales
 
 // ----------------------------------------------------------------
+// LCD — Pantalla LCD 1602A paralela (HD44780), modo 4 bits
+//
+// Libreria: LiquidCrystal (incluida en Arduino IDE, no requiere instalacion adicional)
+//
+// Conexion fisica:
+//   LCD GND/VSS → GND
+//   LCD VDD     → 5V
+//   LCD VO      → pin central del potenciometro B100K (extremos a 5V y GND)
+//   LCD RS      → GPIO13
+//   LCD RW      → GND (modo solo escritura, conectar directo a GND)
+//   LCD E       → GPIO14
+//   LCD D0-D3   → sin conectar (modo 4 bits no los usa)
+//   LCD D4      → GPIO25
+//   LCD D5      → GPIO26
+//   LCD D6      → GPIO27
+//   LCD D7      → GPIO32
+//   LCD A/LED+  → 5V (idealmente con resistencia limitadora de 33-100 ohm)
+//   LCD K/LED-  → GND
+//
+// Si la pantalla prende pero no muestra texto:
+//   Ajustar el potenciometro de contraste conectado a VO.
+// ----------------------------------------------------------------
+#include <LiquidCrystal.h>
+
+const bool    USAR_LCD = true;
+const uint8_t LCD_COLS = 16;
+const uint8_t LCD_ROWS = 2;
+const uint8_t LCD_RS   = 13;
+const uint8_t LCD_E    = 14;
+const uint8_t LCD_D4   = 25;
+const uint8_t LCD_D5   = 26;
+const uint8_t LCD_D6   = 27;
+const uint8_t LCD_D7   = 32;
+
+LiquidCrystal lcd(LCD_RS, LCD_E, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
+
+// ----------------------------------------------------------------
 // CONFIGURACIÓN — CAMBIAR EN secrets.h, NO AQUÍ
 // ----------------------------------------------------------------
 
@@ -70,10 +107,23 @@ float v_pm25        = 0.0;
 float v_pm10        = 0.0;
 
 // ----------------------------------------------------------------
-// ESTADO Y TIMER
+// ESTADO Y TIMERS
 // ----------------------------------------------------------------
 
 unsigned long ultimoEnvio = 0;
+
+// Flags: indican si ya hubo al menos una lectura válida de cada sensor
+bool bmeListo = false;
+bool sdsListo = false;
+
+// Último código HTTP recibido (0 = sin envío aún)
+int ultimoCodigoHTTP = 0;
+
+// Rotación de páginas LCD
+int           paginaLCD           = 0;
+unsigned long ultimoCambioLCD     = 0;
+const unsigned long INTERVALO_LCD_MS  = 3000;  // Cambiar página cada 3 segundos
+const int          TOTAL_PAGINAS_LCD  = 9;     // Un dato por pantalla
 
 // ----------------------------------------------------------------
 // HELPERS
@@ -111,6 +161,108 @@ void reconectarWifi() {
 }
 
 // ----------------------------------------------------------------
+// LCD — FUNCIONES AUXILIARES
+// ----------------------------------------------------------------
+
+// Imprime texto en una fila y rellena el resto con espacios
+// para borrar caracteres residuales de impresiones anteriores.
+void imprimirLCDLinea(uint8_t fila, const String& texto) {
+  if (!USAR_LCD) return;
+  lcd.setCursor(0, fila);
+  lcd.print(texto);
+  int restantes = LCD_COLS - (int)texto.length();
+  for (int i = 0; i < restantes; i++) lcd.print(' ');
+}
+
+// Rellena una fila completa con espacios.
+void limpiarLineaLCD(uint8_t fila) {
+  if (!USAR_LCD) return;
+  lcd.setCursor(0, fila);
+  for (uint8_t i = 0; i < LCD_COLS; i++) lcd.print(' ');
+}
+
+// Inicializa la pantalla en modo 4 bits y la limpia.
+void inicializarLCD() {
+  if (!USAR_LCD) return;
+  lcd.begin(LCD_COLS, LCD_ROWS);
+  lcd.clear();
+  Serial.println("[LCD] Pantalla paralela 16x2 inicializada.");
+  Serial.println("[LCD] RS=13 E=14 D4=25 D5=26 D6=27 D7=32");
+  Serial.println("[LCD] Si no se ve texto, ajustar el potenciometro conectado a VO.");
+}
+
+// Muestra dos lineas fijas (usado durante el arranque).
+void mostrarLCDInicio(const char* linea1, const char* linea2) {
+  if (!USAR_LCD) return;
+  imprimirLCDLinea(0, String(linea1));
+  imprimirLCDLinea(1, String(linea2));
+}
+
+// ----------------------------------------------------------------
+// LCD — CARRUSEL DE DATOS (no bloqueante)
+// 9 pantallas: un dato por pantalla, rota cada INTERVALO_LCD_MS ms.
+// Sobreescribe línea a línea (sin lcd.clear) para evitar parpadeo.
+// Linea 1: nombre del dato. Linea 2: valor + unidad (o "--" si no hay lectura).
+// ----------------------------------------------------------------
+
+void actualizarLCD() {
+  if (!USAR_LCD) return;
+
+  unsigned long ahora = millis();
+  if (ahora - ultimoCambioLCD < INTERVALO_LCD_MS) return;
+  ultimoCambioLCD = ahora;
+  paginaLCD = (paginaLCD + 1) % TOTAL_PAGINAS_LCD;
+
+  switch (paginaLCD) {
+
+    case 0:
+      imprimirLCDLinea(0, "Temperatura");
+      imprimirLCDLinea(1, bmeListo ? String(v_temperatura, 1) + " C"    : "--");
+      break;
+
+    case 1:
+      imprimirLCDLinea(0, "Humedad");
+      imprimirLCDLinea(1, bmeListo ? String((int)v_humedad)  + " %"    : "--");
+      break;
+
+    case 2:
+      imprimirLCDLinea(0, "Presion");
+      imprimirLCDLinea(1, bmeListo ? String((int)v_presion)  + " hPa"  : "--");
+      break;
+
+    case 3:
+      imprimirLCDLinea(0, "PM2.5");
+      imprimirLCDLinea(1, sdsListo ? String(v_pm25, 1)       + " ug/m3": "--");
+      break;
+
+    case 4:
+      imprimirLCDLinea(0, "PM10");
+      imprimirLCDLinea(1, sdsListo ? String(v_pm10, 1)       + " ug/m3": "--");
+      break;
+
+    case 5:
+      imprimirLCDLinea(0, "VOC");
+      imprimirLCDLinea(1, bmeListo ? String(v_voc, 1)        + " kOhm" : "--");
+      break;
+
+    case 6:
+      imprimirLCDLinea(0, "Aire");
+      imprimirLCDLinea(1, sdsListo ? String(calcularEstado(calcularCalidadAire())) : "--");
+      break;
+
+    case 7:
+      imprimirLCDLinea(0, "Envio");
+      imprimirLCDLinea(1, ultimoCodigoHTTP == 0 ? "--" : "HTTP: " + String(ultimoCodigoHTTP));
+      break;
+
+    case 8:
+      imprimirLCDLinea(0, "WiFi");
+      imprimirLCDLinea(1, WiFi.status() == WL_CONNECTED ? "Conectado" : "Sin conexion");
+      break;
+  }
+}
+
+// ----------------------------------------------------------------
 // LECTURA BME680
 // ----------------------------------------------------------------
 
@@ -126,8 +278,9 @@ void leerBME680() {
   }
   v_temperatura = bme.temperature;
   v_humedad     = bme.humidity;
-  v_presion     = bme.pressure / 100.0;   // Pa → hPa
+  v_presion     = bme.pressure / 100.0;        // Pa → hPa
   v_voc         = bme.gas_resistance / 1000.0; // Ohm → kOhm
+  bmeListo      = true;
 }
 
 // ----------------------------------------------------------------
@@ -151,8 +304,9 @@ void leerSDS011() {
 
   if (Serial2.read() != 0xAB) return; // byte final inválido
 
-  v_pm25 = ((pm25High * 256) + pm25Low) / 10.0;
-  v_pm10 = ((pm10High * 256) + pm10Low) / 10.0;
+  v_pm25   = ((pm25High * 256) + pm25Low) / 10.0;
+  v_pm10   = ((pm10High * 256) + pm10Low) / 10.0;
+  sdsListo = true;
 }
 
 // ----------------------------------------------------------------
@@ -162,7 +316,7 @@ void leerSDS011() {
 void enviarLectura() {
   reconectarWifi();
   if (WiFi.status() != WL_CONNECTED) {
-    Serial.println("[HTTP] Sin Wi-Fi, envío cancelado.");
+    Serial.println("[HTTP] Sin Wi-Fi, envio cancelado.");
     return;
   }
 
@@ -200,15 +354,16 @@ void enviarLectura() {
     int httpCode = http.POST(payload);
 
     if (httpCode > 0) {
-      // Cualquier respuesta HTTP (201, 400, 401, 500, ...) detiene los reintentos
+      // Guardar código para mostrarlo en la LCD (página 3)
+      ultimoCodigoHTTP = httpCode;
       String respuesta = http.getString();
-      Serial.printf("[HTTP] Código: %d — %s\n", httpCode, respuesta.c_str());
+      Serial.printf("[HTTP] Codigo: %d — %s\n", httpCode, respuesta.c_str());
       http.end();
       return;
     }
 
     // httpCode <= 0 → error de conexión: sí se reintenta
-    Serial.printf("[HTTP] Error de conexión: %s\n", http.errorToString(httpCode).c_str());
+    Serial.printf("[HTTP] Error de conexion: %s\n", http.errorToString(httpCode).c_str());
     http.end();
 
     if (intento < 3) {
@@ -230,14 +385,21 @@ void setup() {
 
   Serial.println("\n=== EcoNodo ESP32 — Iniciando ===");
 
+  // Inicializar LCD
+  inicializarLCD();
+  mostrarLCDInicio("EcoNodo", "Iniciando");
+
   // Conectar Wi-Fi
   Serial.print("Conectando a Wi-Fi");
+  mostrarLCDInicio("EcoNodo", "WiFi...");
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
   Serial.println("\nWi-Fi OK. IP: " + WiFi.localIP().toString());
+  mostrarLCDInicio("EcoNodo", "WiFi OK");
+  delay(800);
 
   // Iniciar BME680 via SPI
   if (!bme.begin()) {
@@ -252,7 +414,17 @@ void setup() {
   }
 
   Serial.println("[SDS011] UART listo en pines RX=" + String(SDS_RX) + " TX=" + String(SDS_TX));
-  Serial.println("=== Sistema listo. Primer envío en " + String(INTERVALO_ENVIO_MS / 1000) + " segundos ===\n");
+
+  mostrarLCDInicio("Sistema listo", NODO_ID);
+  delay(1500);
+
+  // Mostrar página 0 del carrusel al arrancar
+  imprimirLCDLinea(0, "Temperatura");
+  imprimirLCDLinea(1, "--");
+  paginaLCD       = 0;
+  ultimoCambioLCD = millis();
+
+  Serial.println("=== Sistema listo. Primer envio en " + String(INTERVALO_ENVIO_MS / 1000) + " segundos ===\n");
 }
 
 // ----------------------------------------------------------------
@@ -263,6 +435,9 @@ void loop() {
   // Leer sensores en cada ciclo
   leerBME680();
   leerSDS011();
+
+  // Actualizar LCD de forma no bloqueante
+  actualizarLCD();
 
   // Enviar cada INTERVALO_ENVIO_MS sin bloquear
   unsigned long ahora = millis();
