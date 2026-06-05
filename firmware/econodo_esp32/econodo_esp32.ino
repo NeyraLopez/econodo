@@ -119,31 +119,31 @@ bool sdsListo = false;
 // Último código HTTP recibido (0 = sin envío aún)
 int ultimoCodigoHTTP = 0;
 
-// ─── LCD: máquina de estados del carrusel marquee ────────────────────────────
+// ─── LCD: marquee continuo — todas las páginas desplazan horizontalmente ─────
 //
-// PAGINA_CORTA:  texto ≤16 cols → mostrar fijo DURACION_PAGINA_CORTA_LCD_MS ms
-// PAUSA_INICIAL: texto >16 cols → esperar PAUSA_INICIAL_SCROLL_MS antes de scrollear
-// SCROLLING:     desplazar offset un carácter cada INTERVALO_SCROLL_LCD_MS ms
-// PAUSA_FINAL:   scroll terminó → esperar PAUSA_FINAL_SCROLL_MS y cambiar página
+// LCD_SCROLLING: avanza offset un carácter cada INTERVALO_MARQUEE_LCD_MS ms.
+// LCD_PAUSA:     espera PAUSA_ENTRE_PAGINAS_LCD_MS y luego cambia de página.
 //
-const int LCD_PAGINA_CORTA  = 0;
-const int LCD_PAUSA_INICIAL = 1;
-const int LCD_SCROLLING     = 2;
-const int LCD_PAUSA_FINAL   = 3;
+// Cada texto se extiende con LCD_COLS espacios al inicio y al final para que
+// entre desde la derecha y salga limpio por la izquierda (efecto marquee puro).
+//
+const int LCD_SCROLLING = 0;
+const int LCD_PAUSA     = 1;
 
-const int  TOTAL_PAGINAS_LCD                     = 10;
-const unsigned long INTERVALO_SCROLL_LCD_MS      = 300;   // ms entre cada paso de scroll
-const unsigned long PAUSA_INICIAL_SCROLL_MS      = 900;   // ms de pausa antes de empezar a desplazar
-const unsigned long PAUSA_FINAL_SCROLL_MS        = 700;   // ms de pausa al terminar el scroll
-const unsigned long DURACION_PAGINA_CORTA_LCD_MS = 3000;  // ms de visualización para texto corto
+const int  TOTAL_PAGINAS_LCD                    = 10;
+const unsigned long INTERVALO_MARQUEE_LCD_MS    = 280;  // ms entre cada paso de marquee
+const unsigned long PAUSA_ENTRE_PAGINAS_LCD_MS  = 500;  // ms de pausa entre páginas
 
-int           paginaLCD             = 0;
-int           offsetScrollLCD       = 0;
-int           estadoScrollLCD       = LCD_PAGINA_CORTA;
-String        lcdLinea1             = "";
-String        lcdLinea2             = "";
-unsigned long inicioPaginaLCD       = 0;
-unsigned long ultimoCambioScrollLCD = 0;
+int           paginaLCD              = 0;
+int           offsetMarqueeLCD       = 0;
+int           maxOffsetMarqueeLCD    = 0;
+int           estadoMarqueeLCD       = LCD_SCROLLING;
+String        lcdLinea1              = "";
+String        lcdLinea2              = "";
+String        lcdLinea1Ext           = "";
+String        lcdLinea2Ext           = "";
+unsigned long ultimoCambioMarqueeLCD = 0;
+unsigned long inicioPaginaLCD        = 0;
 
 // ----------------------------------------------------------------
 // HELPERS
@@ -219,79 +219,116 @@ void mostrarLCDInicio(const char* linea1, const char* linea2) {
 }
 
 // ----------------------------------------------------------------
-// LCD — CARRUSEL CON MARQUEE
+// LCD — HELPERS DE ESTADO (lenguaje simple para exposición)
 // ----------------------------------------------------------------
 
-// Devuelve true si el texto supera los 16 caracteres de la fila LCD.
-bool necesitaScroll(const String& texto) {
-  return (int)texto.length() > LCD_COLS;
+const char* estadoTemperatura() {
+  if (!bmeListo)              return "--";
+  if (v_temperatura < 10.0)  return "Baja";
+  if (v_temperatura <= 35.0) return "Normal";
+  if (v_temperatura <= 40.0) return "Alta";
+  return "Muy alta";
 }
 
-// Devuelve una ventana de exactamente LCD_COLS caracteres.
-// Texto corto: rellena con espacios a la derecha.
-// Texto largo: extrae la sub-cadena desde el offset indicado (desplazamiento horizontal).
-String obtenerVentanaScroll(const String& texto, int offset) {
-  if (!necesitaScroll(texto)) {
-    String padded = texto;
-    while ((int)padded.length() < LCD_COLS) padded += ' ';
-    return padded;
-  }
-  // Espacios finales para que el texto salga limpio al final del scroll
-  String ext = texto + "   ";
-  int maxOff = (int)ext.length() - LCD_COLS;
-  if (offset < 0)      offset = 0;
+const char* estadoHumedad() {
+  if (!bmeListo)         return "--";
+  if (v_humedad < 20.0)  return "Baja";
+  if (v_humedad <= 70.0) return "Normal";
+  return "Alta";
+}
+
+const char* estadoPresion() {
+  if (!bmeListo) return "--";
+  return v_presion < 950.0 ? "Baja" : "Normal";
+}
+
+const char* estadoPolvoFino() {
+  if (!sdsListo)       return "--";
+  if (v_pm25 <= 15.0)  return "Bajo";
+  if (v_pm25 <= 35.0)  return "Medio";
+  return "Alto";
+}
+
+const char* estadoPolvoAmbiental() {
+  if (!sdsListo)        return "--";
+  if (v_pm10 <= 45.0)   return "Bajo";
+  if (v_pm10 <= 100.0)  return "Medio";
+  return "Alto";
+}
+
+const char* estadoGasesSimple() {
+  const char* est = calcularEstado(calcularCalidadAire());
+  if (strcmp(est, "Bueno") == 0 || strcmp(est, "Moderado") == 0) return "Normal";
+  return "Alto";
+}
+
+// ----------------------------------------------------------------
+// LCD — MARQUEE CONTINUO
+// ----------------------------------------------------------------
+
+// Agrega LCD_COLS espacios antes y después del texto para que
+// entre desde la derecha y salga limpio por la izquierda.
+String prepararTextoMarquee(const String& texto) {
+  String pad = "";
+  for (int i = 0; i < LCD_COLS; i++) pad += ' ';
+  return pad + texto + pad;
+}
+
+// Devuelve exactamente LCD_COLS caracteres desde textoExtendido[offset].
+String obtenerVentanaMarquee(const String& textoExtendido, int offset) {
+  if (offset < 0) offset = 0;
+  int maxOff = (int)textoExtendido.length() - LCD_COLS;
+  if (maxOff < 0) maxOff = 0;
   if (offset > maxOff) offset = maxOff;
-  String ventana = ext.substring(offset, offset + LCD_COLS);
+  String ventana = textoExtendido.substring(offset, offset + LCD_COLS);
   while ((int)ventana.length() < LCD_COLS) ventana += ' ';
   return ventana;
 }
 
-// Construye los textos de línea 1 y línea 2 para cada página del carrusel.
-// Los valores usan las variables globales reales de los sensores.
+// Construye los textos de línea 1 y línea 2 para cada página.
+// Usa lenguaje simple orientado al público general.
 void obtenerContenidoPaginaLCD(int pagina, String &l1, String &l2) {
-  float calidadAire = calcularCalidadAire();
-
   switch (pagina) {
     case 0:
       l1 = "EcoNodo";
       l2 = "Monitor ambiental";
       break;
     case 1:
-      l1 = "Temperatura";
-      l2 = bmeListo ? String(v_temperatura, 1) + " C"     : "--";
+      l1 = bmeListo ? "Temperatura: " + String((int)v_temperatura) + " C" : "Temperatura: --";
+      l2 = "Estado: " + String(estadoTemperatura());
       break;
     case 2:
-      l1 = "Humedad";
-      l2 = bmeListo ? String((int)v_humedad)   + " %"     : "--";
+      l1 = bmeListo ? "Humedad: " + String((int)v_humedad) + " %" : "Humedad: --";
+      l2 = "Estado: " + String(estadoHumedad());
       break;
     case 3:
-      l1 = "Presion";
-      l2 = bmeListo ? String((int)v_presion)   + " hPa"   : "--";
+      l1 = bmeListo ? "Presion: " + String((int)v_presion) + " hPa" : "Presion: --";
+      l2 = "Estado: " + String(estadoPresion());
       break;
     case 4:
-      l1 = "PM2.5";
-      l2 = sdsListo ? String(v_pm25, 1)        + " ug/m3" : "--";
+      l1 = sdsListo ? "Polvo fino: " + String((int)v_pm25) : "Polvo fino: --";
+      l2 = "Ref: " + String(estadoPolvoFino());
       break;
     case 5:
-      l1 = "PM10";
-      l2 = sdsListo ? String(v_pm10, 1)        + " ug/m3" : "--";
+      l1 = sdsListo ? "Polvo ambiental: " + String((int)v_pm10) : "Polvo ambiental: --";
+      l2 = "Ref: " + String(estadoPolvoAmbiental());
       break;
-    case 6:
-      l1 = "VOC";
-      l2 = bmeListo ? String(v_voc, 1)         + " kOhm"  : "--";
+    case 6: {
+      String gEst = String(estadoGasesSimple());
+      l1 = "Gases: " + gEst;
+      l2 = (gEst == "Normal") ? "Aire sin alerta" : "Revise aire";
       break;
+    }
     case 7:
-      l1 = "Calidad del aire";
-      l2 = sdsListo
-        ? String(calcularEstado(calidadAire)) + " - " + String(calidadAire, 1) + " ug/m3"
-        : "--";
+      l1 = "Calidad aire";
+      l2 = (bmeListo || sdsListo) ? String(calcularEstado(calcularCalidadAire())) : "--";
       break;
     case 8:
-      l1 = "Envio a nube";
-      l2 = ultimoCodigoHTTP == 0 ? "--" : "HTTP: " + String(ultimoCodigoHTTP);
+      l1 = "Nube";
+      l2 = ultimoCodigoHTTP == 0 ? "Sin envios aun" : "HTTP: " + String(ultimoCodigoHTTP);
       break;
     case 9:
-      l1 = "WiFi";
+      l1 = "Conexion WiFi";
       l2 = WiFi.status() == WL_CONNECTED ? "Conectado" : "Sin conexion";
       break;
     default:
@@ -301,83 +338,60 @@ void obtenerContenidoPaginaLCD(int pagina, String &l1, String &l2) {
   }
 }
 
-// Reinicia el estado de scroll para la página actual y renderiza el primer frame.
-void resetScrollLCD() {
-  offsetScrollLCD = 0;
-  inicioPaginaLCD = millis();
+// Reinicia el marquee para la página actual y renderiza el primer frame.
+void resetMarqueeLCD() {
+  offsetMarqueeLCD      = 0;
+  estadoMarqueeLCD      = LCD_SCROLLING;
+  ultimoCambioMarqueeLCD = millis();
 
   obtenerContenidoPaginaLCD(paginaLCD, lcdLinea1, lcdLinea2);
+  lcdLinea1Ext = prepararTextoMarquee(lcdLinea1);
+  lcdLinea2Ext = prepararTextoMarquee(lcdLinea2);
 
-  // Renderizar frame inicial (offset 0): muestra el comienzo del texto
-  imprimirLCDLinea(0, obtenerVentanaScroll(lcdLinea1, 0));
-  imprimirLCDLinea(1, obtenerVentanaScroll(lcdLinea2, 0));
+  int maxOff1 = (int)lcdLinea1Ext.length() - LCD_COLS;
+  int maxOff2 = (int)lcdLinea2Ext.length() - LCD_COLS;
+  if (maxOff1 < 0) maxOff1 = 0;
+  if (maxOff2 < 0) maxOff2 = 0;
+  maxOffsetMarqueeLCD = max(maxOff1, maxOff2);
 
-  estadoScrollLCD = (necesitaScroll(lcdLinea1) || necesitaScroll(lcdLinea2))
-    ? LCD_PAUSA_INICIAL
-    : LCD_PAGINA_CORTA;
+  imprimirLCDLinea(0, obtenerVentanaMarquee(lcdLinea1Ext, 0));
+  imprimirLCDLinea(1, obtenerVentanaMarquee(lcdLinea2Ext, 0));
 }
 
-// Avanza a la siguiente página del carrusel y reinicia el estado de scroll.
+// Avanza a la siguiente página del carrusel y reinicia el marquee.
 void cambiarPaginaLCD() {
   paginaLCD = (paginaLCD + 1) % TOTAL_PAGINAS_LCD;
-  resetScrollLCD();
+  resetMarqueeLCD();
 }
 
 // Actualiza la LCD de forma no bloqueante.
-// Implementa la máquina de estados: pausa inicial → scroll → pausa final → cambio de página.
+// LCD_SCROLLING: avanza offset cada INTERVALO_MARQUEE_LCD_MS.
+// LCD_PAUSA:     espera PAUSA_ENTRE_PAGINAS_LCD_MS y cambia página.
 void actualizarLCD() {
   if (!USAR_LCD) return;
 
   unsigned long ahora = millis();
 
-  switch (estadoScrollLCD) {
-
-    case LCD_PAGINA_CORTA:
-      // Texto corto: mantener visible y luego avanzar
-      if (ahora - inicioPaginaLCD >= DURACION_PAGINA_CORTA_LCD_MS) {
-        cambiarPaginaLCD();
-      }
-      break;
-
-    case LCD_PAUSA_INICIAL:
-      // Pausa antes de empezar el desplazamiento
-      if (ahora - inicioPaginaLCD >= PAUSA_INICIAL_SCROLL_MS) {
-        estadoScrollLCD       = LCD_SCROLLING;
-        ultimoCambioScrollLCD = ahora;
-      }
-      break;
+  switch (estadoMarqueeLCD) {
 
     case LCD_SCROLLING:
-      if (ahora - ultimoCambioScrollLCD >= INTERVALO_SCROLL_LCD_MS) {
-        ultimoCambioScrollLCD = ahora;
+      if (ahora - ultimoCambioMarqueeLCD >= INTERVALO_MARQUEE_LCD_MS) {
+        ultimoCambioMarqueeLCD = ahora;
 
-        // Calcular offset máximo usando la línea más larga
-        String ext1 = lcdLinea1 + "   ";
-        String ext2 = lcdLinea2 + "   ";
-        int maxOff1 = necesitaScroll(lcdLinea1) ? (int)ext1.length() - LCD_COLS : 0;
-        int maxOff2 = necesitaScroll(lcdLinea2) ? (int)ext2.length() - LCD_COLS : 0;
-        int maxOff  = max(maxOff1, maxOff2);
+        imprimirLCDLinea(0, obtenerVentanaMarquee(lcdLinea1Ext, offsetMarqueeLCD));
+        imprimirLCDLinea(1, obtenerVentanaMarquee(lcdLinea2Ext, offsetMarqueeLCD));
 
-        // Renderizar frame actual — solo las líneas que necesitan scroll
-        if (necesitaScroll(lcdLinea1)) {
-          imprimirLCDLinea(0, obtenerVentanaScroll(lcdLinea1, offsetScrollLCD));
-        }
-        if (necesitaScroll(lcdLinea2)) {
-          imprimirLCDLinea(1, obtenerVentanaScroll(lcdLinea2, offsetScrollLCD));
-        }
-
-        if (offsetScrollLCD >= maxOff) {
-          // Llegamos al final del texto: pausa y luego cambiar página
-          estadoScrollLCD       = LCD_PAUSA_FINAL;
-          ultimoCambioScrollLCD = ahora;
+        if (offsetMarqueeLCD >= maxOffsetMarqueeLCD) {
+          estadoMarqueeLCD = LCD_PAUSA;
+          inicioPaginaLCD  = ahora;
         } else {
-          offsetScrollLCD++;
+          offsetMarqueeLCD++;
         }
       }
       break;
 
-    case LCD_PAUSA_FINAL:
-      if (ahora - ultimoCambioScrollLCD >= PAUSA_FINAL_SCROLL_MS) {
+    case LCD_PAUSA:
+      if (ahora - inicioPaginaLCD >= PAUSA_ENTRE_PAGINAS_LCD_MS) {
         cambiarPaginaLCD();
       }
       break;
@@ -540,9 +554,9 @@ void setup() {
   mostrarLCDInicio("Sistema listo", NODO_ID);
   delay(1500);
 
-  // Arrancar carrusel marquee desde página 0
+  // Arrancar marquee desde página 0
   paginaLCD = 0;
-  resetScrollLCD();
+  resetMarqueeLCD();
 
   Serial.println("=== Sistema listo. Primer envio en " + String(INTERVALO_ENVIO_MS / 1000) + " segundos ===\n");
 }
