@@ -13,7 +13,7 @@
 <body>
    <header class="header">
         <h1>Monitoreo Ambiental</h1>
-        
+
         <div class="info">
             <p>Fecha: <span id="fecha"></span></p>
             <p>Hora: <span id="hora"></span></p>
@@ -21,50 +21,13 @@
         </div>
     </header>
 
-    <section class="hero-econodo">
-        <div class="hero-contenido">
-            <span class="hero-badge">🌿 Sistema IoT Ambiental</span>
-            <h1 class="hero-titulo">EcoNodo</h1>
-            <p class="hero-subtitulo">Monitoreo ambiental en tiempo real</p>
-            <p class="hero-descripcion">
-                EcoNodo captura datos del entorno mediante sensores conectados a un ESP32,
-                los envía a la nube y los presenta en una plataforma web clara y accesible.
-            </p>
-            <div class="hero-acciones">
-                <a href="#dashboard" class="btn-hero">Empezar</a>
-                <a href="historial.html" class="btn-hero-secundario">Ver historial</a>
-            </div>
-            <div class="hero-arquitectura">
-                <span class="arq-nodo">ESP32 + Sensores</span>
-                <span class="arq-flecha">→</span>
-                <span class="arq-nodo arq-nodo--cloud">Supabase</span>
-                <span class="arq-flecha">→</span>
-                <span class="arq-nodo">Dashboard Web</span>
-            </div>
-        </div>
-
-        <div class="hero-cards">
-            <div class="hero-card hero-card--temp">
-                <span class="hero-card-icono">🌡️</span>
-                <h3>Mide el ambiente</h3>
-                <p>Temperatura, humedad, presión, PM2.5, PM10, VOC y calidad del aire.</p>
-            </div>
-            <div class="hero-card hero-card--cloud">
-                <span class="hero-card-icono">☁️</span>
-                <h3>Conecta con la nube</h3>
-                <p>Las lecturas se envían mediante HTTPS a Supabase para su almacenamiento y consulta.</p>
-            </div>
-            <div class="hero-card hero-card--web">
-                <span class="hero-card-icono">📊</span>
-                <h3>Visualiza resultados</h3>
-                <p>Dashboard, historial, alertas y configuración desde el navegador.</p>
-            </div>
-        </div>
-    </section>
+    <div class="barra-acerca">
+        <button id="btn-acerca" class="btn-acerca">🌿 Acerca de EcoNodo</button>
+    </div>
 
     <div class="contenedor">
         <nav class="navegacion">
-            <a href="index.html"><img src="src/img/panel.png" alt="Dashboard">Dashboard</a>
+           <a href="index.html"><img src="src/img/panel.png" alt="Dashboard">Dashboard</a>
             <a href="historial.html"><img src="src/img/reloj.png" alt="IconoHistorial">Historial</a>
             <a href="alertas.html"><img src="src/img/peligro.png" alt="IconoAlertas">Alertas</a>
             <a href="configuracion.html"><img src="src/img/engranaje.png" alt="Configuración">Configuración</a>
@@ -118,8 +81,48 @@
         </main>
     </div>
 
+    <!-- Modal de bienvenida -->
+    <div id="modal-intro" class="modal-intro activo" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+        <div class="modal-intro__overlay" id="modal-overlay"></div>
+        <div class="modal-intro__contenido">
+
+            <button class="modal-intro__cerrar" id="btn-cerrar-modal" aria-label="Cerrar">&times;</button>
+
+            <span class="modal-intro__badge">🌿 Sistema IoT Ambiental</span>
+            <h2 class="modal-intro__titulo" id="modal-titulo">EcoNodo</h2>
+            <p class="modal-intro__subtitulo">Sistema IoT de monitoreo ambiental</p>
+
+            <p class="modal-intro__descripcion">
+                EcoNodo captura datos del entorno mediante sensores conectados a un ESP32,
+                los envía a la nube y los presenta en una plataforma web clara y accesible
+                para facilitar el monitoreo ambiental.
+            </p>
+
+            <ul class="modal-intro__puntos">
+                <li>Mide temperatura, humedad, presión, PM2.5, PM10, VOC y calidad del aire.</li>
+                <li>Envía lecturas a Supabase mediante HTTPS.</li>
+                <li>Muestra dashboard, historial, alertas y configuración desde la web.</li>
+            </ul>
+
+            <div class="modal-intro__arquitectura">
+                <span class="modal-arq-nodo">ESP32 + Sensores</span>
+                <span class="modal-arq-flecha">→</span>
+                <span class="modal-arq-nodo modal-arq-nodo--cloud">Supabase</span>
+                <span class="modal-arq-flecha">→</span>
+                <span class="modal-arq-nodo">Dashboard Web</span>
+            </div>
+
+            <div class="modal-intro__acciones">
+                <button id="btn-empezar" class="btn-modal-principal">Empezar</button>
+                <a href="historial.html" class="btn-modal-secundario">Ver historial</a>
+            </div>
+
+        </div>
+    </div>
+
     <script src="js/config.js"></script>
     <script src="js/api.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/modal-intro.js"></script>
 </body>
 </html>
