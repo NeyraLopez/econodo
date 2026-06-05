@@ -119,11 +119,31 @@ bool sdsListo = false;
 // Último código HTTP recibido (0 = sin envío aún)
 int ultimoCodigoHTTP = 0;
 
-// Rotación de páginas LCD
-int           paginaLCD           = 0;
-unsigned long ultimoCambioLCD     = 0;
-const unsigned long INTERVALO_LCD_MS  = 3000;  // Cambiar página cada 3 segundos
-const int          TOTAL_PAGINAS_LCD  = 9;     // Un dato por pantalla
+// ─── LCD: máquina de estados del carrusel marquee ────────────────────────────
+//
+// PAGINA_CORTA:  texto ≤16 cols → mostrar fijo DURACION_PAGINA_CORTA_LCD_MS ms
+// PAUSA_INICIAL: texto >16 cols → esperar PAUSA_INICIAL_SCROLL_MS antes de scrollear
+// SCROLLING:     desplazar offset un carácter cada INTERVALO_SCROLL_LCD_MS ms
+// PAUSA_FINAL:   scroll terminó → esperar PAUSA_FINAL_SCROLL_MS y cambiar página
+//
+const int LCD_PAGINA_CORTA  = 0;
+const int LCD_PAUSA_INICIAL = 1;
+const int LCD_SCROLLING     = 2;
+const int LCD_PAUSA_FINAL   = 3;
+
+const int  TOTAL_PAGINAS_LCD                     = 10;
+const unsigned long INTERVALO_SCROLL_LCD_MS      = 300;   // ms entre cada paso de scroll
+const unsigned long PAUSA_INICIAL_SCROLL_MS      = 900;   // ms de pausa antes de empezar a desplazar
+const unsigned long PAUSA_FINAL_SCROLL_MS        = 700;   // ms de pausa al terminar el scroll
+const unsigned long DURACION_PAGINA_CORTA_LCD_MS = 3000;  // ms de visualización para texto corto
+
+int           paginaLCD             = 0;
+int           offsetScrollLCD       = 0;
+int           estadoScrollLCD       = LCD_PAGINA_CORTA;
+String        lcdLinea1             = "";
+String        lcdLinea2             = "";
+unsigned long inicioPaginaLCD       = 0;
+unsigned long ultimoCambioScrollLCD = 0;
 
 // ----------------------------------------------------------------
 // HELPERS
@@ -161,7 +181,7 @@ void reconectarWifi() {
 }
 
 // ----------------------------------------------------------------
-// LCD — FUNCIONES AUXILIARES
+// LCD — FUNCIONES BASE
 // ----------------------------------------------------------------
 
 // Imprime texto en una fila y rellena el resto con espacios
@@ -191,7 +211,7 @@ void inicializarLCD() {
   Serial.println("[LCD] Si no se ve texto, ajustar el potenciometro conectado a VO.");
 }
 
-// Muestra dos lineas fijas (usado durante el arranque).
+// Muestra dos lineas fijas — usado durante el arranque.
 void mostrarLCDInicio(const char* linea1, const char* linea2) {
   if (!USAR_LCD) return;
   imprimirLCDLinea(0, String(linea1));
@@ -199,65 +219,167 @@ void mostrarLCDInicio(const char* linea1, const char* linea2) {
 }
 
 // ----------------------------------------------------------------
-// LCD — CARRUSEL DE DATOS (no bloqueante)
-// 9 pantallas: un dato por pantalla, rota cada INTERVALO_LCD_MS ms.
-// Sobreescribe línea a línea (sin lcd.clear) para evitar parpadeo.
-// Linea 1: nombre del dato. Linea 2: valor + unidad (o "--" si no hay lectura).
+// LCD — CARRUSEL CON MARQUEE
 // ----------------------------------------------------------------
 
+// Devuelve true si el texto supera los 16 caracteres de la fila LCD.
+bool necesitaScroll(const String& texto) {
+  return (int)texto.length() > LCD_COLS;
+}
+
+// Devuelve una ventana de exactamente LCD_COLS caracteres.
+// Texto corto: rellena con espacios a la derecha.
+// Texto largo: extrae la sub-cadena desde el offset indicado (desplazamiento horizontal).
+String obtenerVentanaScroll(const String& texto, int offset) {
+  if (!necesitaScroll(texto)) {
+    String padded = texto;
+    while ((int)padded.length() < LCD_COLS) padded += ' ';
+    return padded;
+  }
+  // Espacios finales para que el texto salga limpio al final del scroll
+  String ext = texto + "   ";
+  int maxOff = (int)ext.length() - LCD_COLS;
+  if (offset < 0)      offset = 0;
+  if (offset > maxOff) offset = maxOff;
+  String ventana = ext.substring(offset, offset + LCD_COLS);
+  while ((int)ventana.length() < LCD_COLS) ventana += ' ';
+  return ventana;
+}
+
+// Construye los textos de línea 1 y línea 2 para cada página del carrusel.
+// Los valores usan las variables globales reales de los sensores.
+void obtenerContenidoPaginaLCD(int pagina, String &l1, String &l2) {
+  float calidadAire = calcularCalidadAire();
+
+  switch (pagina) {
+    case 0:
+      l1 = "EcoNodo";
+      l2 = "Monitor ambiental";
+      break;
+    case 1:
+      l1 = "Temperatura";
+      l2 = bmeListo ? String(v_temperatura, 1) + " C"     : "--";
+      break;
+    case 2:
+      l1 = "Humedad";
+      l2 = bmeListo ? String((int)v_humedad)   + " %"     : "--";
+      break;
+    case 3:
+      l1 = "Presion";
+      l2 = bmeListo ? String((int)v_presion)   + " hPa"   : "--";
+      break;
+    case 4:
+      l1 = "PM2.5";
+      l2 = sdsListo ? String(v_pm25, 1)        + " ug/m3" : "--";
+      break;
+    case 5:
+      l1 = "PM10";
+      l2 = sdsListo ? String(v_pm10, 1)        + " ug/m3" : "--";
+      break;
+    case 6:
+      l1 = "VOC";
+      l2 = bmeListo ? String(v_voc, 1)         + " kOhm"  : "--";
+      break;
+    case 7:
+      l1 = "Calidad del aire";
+      l2 = sdsListo
+        ? String(calcularEstado(calidadAire)) + " - " + String(calidadAire, 1) + " ug/m3"
+        : "--";
+      break;
+    case 8:
+      l1 = "Envio a nube";
+      l2 = ultimoCodigoHTTP == 0 ? "--" : "HTTP: " + String(ultimoCodigoHTTP);
+      break;
+    case 9:
+      l1 = "WiFi";
+      l2 = WiFi.status() == WL_CONNECTED ? "Conectado" : "Sin conexion";
+      break;
+    default:
+      l1 = "EcoNodo";
+      l2 = "";
+      break;
+  }
+}
+
+// Reinicia el estado de scroll para la página actual y renderiza el primer frame.
+void resetScrollLCD() {
+  offsetScrollLCD = 0;
+  inicioPaginaLCD = millis();
+
+  obtenerContenidoPaginaLCD(paginaLCD, lcdLinea1, lcdLinea2);
+
+  // Renderizar frame inicial (offset 0): muestra el comienzo del texto
+  imprimirLCDLinea(0, obtenerVentanaScroll(lcdLinea1, 0));
+  imprimirLCDLinea(1, obtenerVentanaScroll(lcdLinea2, 0));
+
+  estadoScrollLCD = (necesitaScroll(lcdLinea1) || necesitaScroll(lcdLinea2))
+    ? LCD_PAUSA_INICIAL
+    : LCD_PAGINA_CORTA;
+}
+
+// Avanza a la siguiente página del carrusel y reinicia el estado de scroll.
+void cambiarPaginaLCD() {
+  paginaLCD = (paginaLCD + 1) % TOTAL_PAGINAS_LCD;
+  resetScrollLCD();
+}
+
+// Actualiza la LCD de forma no bloqueante.
+// Implementa la máquina de estados: pausa inicial → scroll → pausa final → cambio de página.
 void actualizarLCD() {
   if (!USAR_LCD) return;
 
   unsigned long ahora = millis();
-  if (ahora - ultimoCambioLCD < INTERVALO_LCD_MS) return;
-  ultimoCambioLCD = ahora;
-  paginaLCD = (paginaLCD + 1) % TOTAL_PAGINAS_LCD;
 
-  switch (paginaLCD) {
+  switch (estadoScrollLCD) {
 
-    case 0:
-      imprimirLCDLinea(0, "Temperatura");
-      imprimirLCDLinea(1, bmeListo ? String(v_temperatura, 1) + " C"    : "--");
+    case LCD_PAGINA_CORTA:
+      // Texto corto: mantener visible y luego avanzar
+      if (ahora - inicioPaginaLCD >= DURACION_PAGINA_CORTA_LCD_MS) {
+        cambiarPaginaLCD();
+      }
       break;
 
-    case 1:
-      imprimirLCDLinea(0, "Humedad");
-      imprimirLCDLinea(1, bmeListo ? String((int)v_humedad)  + " %"    : "--");
+    case LCD_PAUSA_INICIAL:
+      // Pausa antes de empezar el desplazamiento
+      if (ahora - inicioPaginaLCD >= PAUSA_INICIAL_SCROLL_MS) {
+        estadoScrollLCD       = LCD_SCROLLING;
+        ultimoCambioScrollLCD = ahora;
+      }
       break;
 
-    case 2:
-      imprimirLCDLinea(0, "Presion");
-      imprimirLCDLinea(1, bmeListo ? String((int)v_presion)  + " hPa"  : "--");
+    case LCD_SCROLLING:
+      if (ahora - ultimoCambioScrollLCD >= INTERVALO_SCROLL_LCD_MS) {
+        ultimoCambioScrollLCD = ahora;
+
+        // Calcular offset máximo usando la línea más larga
+        String ext1 = lcdLinea1 + "   ";
+        String ext2 = lcdLinea2 + "   ";
+        int maxOff1 = necesitaScroll(lcdLinea1) ? (int)ext1.length() - LCD_COLS : 0;
+        int maxOff2 = necesitaScroll(lcdLinea2) ? (int)ext2.length() - LCD_COLS : 0;
+        int maxOff  = max(maxOff1, maxOff2);
+
+        // Renderizar frame actual — solo las líneas que necesitan scroll
+        if (necesitaScroll(lcdLinea1)) {
+          imprimirLCDLinea(0, obtenerVentanaScroll(lcdLinea1, offsetScrollLCD));
+        }
+        if (necesitaScroll(lcdLinea2)) {
+          imprimirLCDLinea(1, obtenerVentanaScroll(lcdLinea2, offsetScrollLCD));
+        }
+
+        if (offsetScrollLCD >= maxOff) {
+          // Llegamos al final del texto: pausa y luego cambiar página
+          estadoScrollLCD       = LCD_PAUSA_FINAL;
+          ultimoCambioScrollLCD = ahora;
+        } else {
+          offsetScrollLCD++;
+        }
+      }
       break;
 
-    case 3:
-      imprimirLCDLinea(0, "PM2.5");
-      imprimirLCDLinea(1, sdsListo ? String(v_pm25, 1)       + " ug/m3": "--");
-      break;
-
-    case 4:
-      imprimirLCDLinea(0, "PM10");
-      imprimirLCDLinea(1, sdsListo ? String(v_pm10, 1)       + " ug/m3": "--");
-      break;
-
-    case 5:
-      imprimirLCDLinea(0, "VOC");
-      imprimirLCDLinea(1, bmeListo ? String(v_voc, 1)        + " kOhm" : "--");
-      break;
-
-    case 6:
-      imprimirLCDLinea(0, "Aire");
-      imprimirLCDLinea(1, sdsListo ? String(calcularEstado(calcularCalidadAire())) : "--");
-      break;
-
-    case 7:
-      imprimirLCDLinea(0, "Envio");
-      imprimirLCDLinea(1, ultimoCodigoHTTP == 0 ? "--" : "HTTP: " + String(ultimoCodigoHTTP));
-      break;
-
-    case 8:
-      imprimirLCDLinea(0, "WiFi");
-      imprimirLCDLinea(1, WiFi.status() == WL_CONNECTED ? "Conectado" : "Sin conexion");
+    case LCD_PAUSA_FINAL:
+      if (ahora - ultimoCambioScrollLCD >= PAUSA_FINAL_SCROLL_MS) {
+        cambiarPaginaLCD();
+      }
       break;
   }
 }
@@ -354,7 +476,7 @@ void enviarLectura() {
     int httpCode = http.POST(payload);
 
     if (httpCode > 0) {
-      // Guardar código para mostrarlo en la LCD (página 3)
+      // Guardar código para mostrarlo en la LCD (página 8)
       ultimoCodigoHTTP = httpCode;
       String respuesta = http.getString();
       Serial.printf("[HTTP] Codigo: %d — %s\n", httpCode, respuesta.c_str());
@@ -418,11 +540,9 @@ void setup() {
   mostrarLCDInicio("Sistema listo", NODO_ID);
   delay(1500);
 
-  // Mostrar página 0 del carrusel al arrancar
-  imprimirLCDLinea(0, "Temperatura");
-  imprimirLCDLinea(1, "--");
-  paginaLCD       = 0;
-  ultimoCambioLCD = millis();
+  // Arrancar carrusel marquee desde página 0
+  paginaLCD = 0;
+  resetScrollLCD();
 
   Serial.println("=== Sistema listo. Primer envio en " + String(INTERVALO_ENVIO_MS / 1000) + " segundos ===\n");
 }
