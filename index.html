@@ -6,6 +6,9 @@
     <title>EcoNodo — Dashboard</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
     <link rel="stylesheet" href="build/css/app.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&display=swap" rel="stylesheet">
 </head>
 <body>
    <header class="header">
@@ -18,6 +21,47 @@
         </div>
     </header>
 
+    <section class="hero-econodo">
+        <div class="hero-contenido">
+            <span class="hero-badge">🌿 Sistema IoT Ambiental</span>
+            <h1 class="hero-titulo">EcoNodo</h1>
+            <p class="hero-subtitulo">Monitoreo ambiental en tiempo real</p>
+            <p class="hero-descripcion">
+                EcoNodo captura datos del entorno mediante sensores conectados a un ESP32,
+                los envía a la nube y los presenta en una plataforma web clara y accesible.
+            </p>
+            <div class="hero-acciones">
+                <a href="#dashboard" class="btn-hero">Empezar</a>
+                <a href="historial.html" class="btn-hero-secundario">Ver historial</a>
+            </div>
+            <div class="hero-arquitectura">
+                <span class="arq-nodo">ESP32 + Sensores</span>
+                <span class="arq-flecha">→</span>
+                <span class="arq-nodo arq-nodo--cloud">Supabase</span>
+                <span class="arq-flecha">→</span>
+                <span class="arq-nodo">Dashboard Web</span>
+            </div>
+        </div>
+
+        <div class="hero-cards">
+            <div class="hero-card hero-card--temp">
+                <span class="hero-card-icono">🌡️</span>
+                <h3>Mide el ambiente</h3>
+                <p>Temperatura, humedad, presión, PM2.5, PM10, VOC y calidad del aire.</p>
+            </div>
+            <div class="hero-card hero-card--cloud">
+                <span class="hero-card-icono">☁️</span>
+                <h3>Conecta con la nube</h3>
+                <p>Las lecturas se envían mediante HTTPS a Supabase para su almacenamiento y consulta.</p>
+            </div>
+            <div class="hero-card hero-card--web">
+                <span class="hero-card-icono">📊</span>
+                <h3>Visualiza resultados</h3>
+                <p>Dashboard, historial, alertas y configuración desde el navegador.</p>
+            </div>
+        </div>
+    </section>
+
     <div class="contenedor">
         <nav class="navegacion">
             <a href="index.html"><img src="src/img/panel.png" alt="Dashboard">Dashboard</a>
@@ -26,7 +70,7 @@
             <a href="configuracion.html"><img src="src/img/engranaje.png" alt="Configuración">Configuración</a>
         </nav>
 
-        <main class="dashboards">
+        <main id="dashboard" class="dashboards">
 
             <div class="card card--temperatura">
                 <h2>🌡️ Temperatura</h2>
